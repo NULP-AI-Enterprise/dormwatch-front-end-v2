@@ -43,10 +43,10 @@ const Header = () => {
         : `${SERVER_URL}${cleanPath.startsWith('/api') ? '' : '/api'}${cleanPath}?t=${imgHash}`;
   }
 
-  const roomObj = user?.room; 
-  const buildingNumber = roomObj?.floor?.building?.number;
-  const roomText = roomObj 
-    ? `Гуртожиток №${buildingNumber || '?'}, Кімн. ${roomObj.room_number}`
+  const placeObj = user?.place; 
+  const buildingName = placeObj?.building?.name || placeObj?.building?.number;
+  const roomText = placeObj 
+    ? `Гуртожиток №${buildingName || '?'}, ${placeObj.place_name}`
     : "Кімната не вказана";
 
   return (

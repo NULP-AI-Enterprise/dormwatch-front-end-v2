@@ -40,7 +40,7 @@ async function fetchJson(path, { method = "GET", body } = {}) {
     body: (body instanceof FormData) ? body : (body ? JSON.stringify(body) : undefined),
   });
 
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     localStorage.removeItem(LS_AUTH_KEY);
     throw new Error("AUTH_REQUIRED");
   }
@@ -67,22 +67,14 @@ function normalizeComplaint(raw) {
   if (status === 'published') status = 'approved';
   if (status === 'denied') status = 'rejected';
 
-  let safeRoom = "";
-  let safeFloor = "";
+  let safePlaceName = "";
   let safeBuilding = "4";
 
-  if (raw.room && typeof raw.room === 'object') {
-      safeRoom = String(raw.room.room_number || "");
-      if (raw.room.floor) {
-          safeFloor = String(raw.room.floor.floor_number || "");
-          if (raw.room.floor.building) {
-              safeBuilding = String(raw.room.floor.building.number || "4");
-          }
+  if (raw.place) {
+      safePlaceName = raw.place.place_name || "";
+      if (raw.place.building) {
+          safeBuilding = raw.place.building.name || "4";
       }
-  } else {
-      safeRoom = raw.room || "";
-      safeFloor = raw.floor || "";
-      safeBuilding = raw.building || "4";
   }
 
   return {
@@ -91,8 +83,7 @@ function normalizeComplaint(raw) {
     description: raw.description ?? "",
     category: raw.category?.name ?? raw.category ?? "plumbing",
     building: safeBuilding,
-    room: safeRoom,
-    floor: safeFloor,
+    placeName: safePlaceName,
     photoUrl: raw.photo_url ?? raw.photoUrl ?? null, 
     status: status, 
     votesCount: Number(raw.votesCount || raw.counter || 0),
@@ -111,7 +102,11 @@ function sortByNew(a, b) {
 
 export async function fetchUserProfile() {
   try {
-      return await fetchJson(`/profile/?t=${Date.now()}`);
+      const data = await fetchJson(`/profile/?t=${Date.now()}`);
+      if (data) {
+          data.is_admin = data.role && ['admin', 'адміністратор'].includes(String(data.role.role_name).toLowerCase());
+      }
+      return data;
   } catch (e) {
       return null;
   }
@@ -119,10 +114,7 @@ export async function fetchUserProfile() {
 
 export async function createProblem(problem) {
     const formData = new FormData();
-    formData.append("building_number", problem.building);
-    formData.append("floor_number", problem.floor);
-    formData.append("room_number", problem.room);
-    formData.append("room", problem.category); 
+    formData.append("category", problem.category); 
     formData.append("title", problem.title);
     formData.append("description", problem.description);
     if (problem.photoFile instanceof File) {
@@ -199,8 +191,8 @@ export async function approveComplaint(id) {
 }
 
 export async function voteComplaint(id) {
-    const res = await fetchJson(`/complaints/${id}/counter/`, { method: "PATCH" });
-    return { id, votesCount: res.counter };
+    const res = await fetchJson(`/complaints/${id}/vote/`, { method: "PATCH" });
+    return { id, votesCount: res.votes };
 }
 
 export async function fetchComments(complaintId) {
@@ -237,19 +229,4 @@ export async function deleteComment(commentId) {
     await fetchJson(`/comments/${commentId}/`, { method: "DELETE" });
 }
 
-export async function updateUserProfile(data) {
-    const formData = new FormData();
-    if (data.first_name) formData.append("first_name", data.first_name);
-    if (data.last_name) formData.append("last_name", data.last_name);
-    if (data.email) formData.append("email", data.email);
-    if (data.photoFile instanceof File) formData.append("photo_url", data.photoFile);
-
-    return await fetchJson("/profile/", { method: "PATCH", body: formData });
-}
-
-export async function changeUserRoom(building, floor, room) {
-    return await fetchJson("/profile/change-room/", {
-      method: "PATCH",
-      body: { building_number: parseInt(building), floor_number: parseInt(floor), room_number: String(room) },
-    });
-}
+
