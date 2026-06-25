@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   fetchPendingComplaints, 
   fetchApprovedComplaints, 
@@ -24,6 +25,27 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
+
+  // Перевірка авторизації
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const user = await fetchUserProfile();
+        if (!user) {
+          navigate("/");
+          return;
+        }
+        const isAdmin = user.role && ["admin", "адміністратор"].includes((user.role.role_name || "").toLowerCase());
+        if (!isAdmin) {
+          navigate("/");
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+    checkAuth();
+  }, [navigate]);
 
   const [openCommentsId, setOpenCommentsId] = useState(null);
   const [commentsData, setCommentsData] = useState({});

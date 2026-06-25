@@ -22,7 +22,14 @@ const CreateReportPage = () => {
 useEffect(() => {
     async function checkAuth() {
       try {
-        await fetchUserProfile();
+        const user = await fetchUserProfile();
+        if (user) {
+          const isAdmin = user.role && ["admin", "адміністратор"].includes((user.role.role_name || "").toLowerCase());
+          if (isAdmin) {
+            navigate("/admin");
+            return;
+          }
+        }
       } catch (e) {
          console.warn("Помилка завантаження профілю", e);
       } finally {
@@ -30,7 +37,7 @@ useEffect(() => {
       }
     }
     checkAuth();
-  }, []);
+  }, [navigate]);
 
   const categories = useMemo(
     () => [

@@ -95,9 +95,11 @@ const Header = () => {
             
             {user ? (
                 <>
-                    <Link to="/create-report" className="hidden sm:flex bg-indigo-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-indigo-700 transition-all shadow-md active:scale-95">
-                    + Створити заявку
-                    </Link>
+                    {!isAdminUser && (
+                      <Link to="/create-report" className="hidden sm:flex bg-indigo-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold hover:bg-indigo-700 transition-all shadow-md active:scale-95">
+                      + Створити заявку
+                      </Link>
+                    )}
 
                     {/* User Info */}
                     <div className="flex items-center gap-2 sm:gap-3 sm:pl-4 sm:border-l sm:border-slate-100">
@@ -159,9 +161,11 @@ const Header = () => {
                         <p className="text-xs font-bold text-slate-900">{user.first_name} {user.last_name}</p>
                         <p className="text-[10px] text-slate-500">{roomText}</p>
                     </div>
-                    <Link to="/create-report" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold text-center mt-2">
-                        + Створити заявку
-                    </Link>
+                    {!isAdminUser && (
+                      <Link to="/create-report" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold text-center mt-2">
+                          + Створити заявку
+                      </Link>
+                    )}
                     <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-900 mt-1 text-center">
                         Мій профіль
                     </Link>

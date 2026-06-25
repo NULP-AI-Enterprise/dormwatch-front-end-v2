@@ -154,6 +154,8 @@ const DashboardPage = () => {
     }
   };
 
+  const isAdmin = currentUser?.role && ["admin", "адміністратор"].includes((currentUser.role.role_name || "").toLowerCase());
+
   if (loading) return <Preloader />;
 
   return (
@@ -195,7 +197,7 @@ const DashboardPage = () => {
                 key={problem.id}
                 className="bg-white rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow relative group"
               >
-                {currentUser && (currentUser.is_admin || currentUser.user === problem.user_id) && (
+                {currentUser && (isAdmin || currentUser.user === problem.user_id) && (
                     <button 
                       onClick={(e) => handleDelete(problem.id, e)}
                       className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur text-red-500 rounded-full hover:bg-red-100 transition-colors shadow-sm opacity-0 group-hover:opacity-100"
@@ -288,7 +290,7 @@ const DashboardPage = () => {
                                       <p className="text-xs text-slate-600">{c.text}</p>
                                       
                                       {/* ПЕРЕВІРКА АВТОРА КОМЕНТАРЯ ЧЕРЕЗ ID */}
-                                      {(currentUser?.user === c.author_id || currentUser?.is_admin) && (
+                                      {(currentUser?.user === c.author_id || isAdmin) && (
                                           <button 
                                               onClick={(e) => handleDeleteComment(problem.id, c.id, e)}
                                               className="absolute top-2 right-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -332,12 +334,21 @@ const DashboardPage = () => {
         
         <div className="lg:col-span-1 space-y-4 sm:space-y-6">
              <div className="bg-white rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-8 border border-slate-100 shadow-sm sticky top-24">
-                <Link
-                  to="/create-report"
-                  className="block w-full py-3 sm:py-4 bg-slate-900 text-white rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold hover:bg-slate-800 transition-all text-center shadow-lg shadow-slate-200"
-                >
-                  Створити нову заявку
-                </Link>
+                {isAdmin ? (
+                  <Link
+                    to="/admin"
+                    className="block w-full py-3 sm:py-4 bg-indigo-600 text-white rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold hover:bg-indigo-700 transition-all text-center shadow-lg shadow-indigo-200"
+                  >
+                    Перейти в комендант-центр
+                  </Link>
+                ) : (
+                  <Link
+                    to="/create-report"
+                    className="block w-full py-3 sm:py-4 bg-slate-900 text-white rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold hover:bg-slate-800 transition-all text-center shadow-lg shadow-slate-200"
+                  >
+                    Створити нову заявку
+                  </Link>
+                )}
              </div>
         </div>
       </div>
