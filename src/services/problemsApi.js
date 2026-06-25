@@ -2,13 +2,23 @@ const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 let accessToken = null;
 
+// ── Refresh mutex: prevents concurrent refresh calls ──
+let refreshPromise = null;
+
+// ── Proactive silent refresh ──
+const ACCESS_TOKEN_LIFETIME_MS = 30 * 60 * 1000; // must match Django ACCESS_TOKEN_LIFETIME
+const REFRESH_BEFORE_EXPIRY_MS = 4 * 60 * 1000;  // refresh 4 min before expiry
+let proactiveRefreshTimer = null;
+
 function setAccessToken(token) {
   accessToken = token;
   try {
     if (token) {
       sessionStorage.setItem("access_token", token);
+      scheduleProactiveRefresh();
     } else {
       sessionStorage.removeItem("access_token");
+      clearProactiveRefresh();
     }
   } catch (_) {}
 }
@@ -34,6 +44,7 @@ export async function registerUser(data) {
   const res = await fetch(`${API_BASE}/auth/register/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(data),
   });
   if (!res.ok) {
@@ -45,21 +56,71 @@ export async function registerUser(data) {
   return tokenData;
 }
 
+// Mutex-guarded refresh: only one refresh request at a time.
+// Concurrent callers await the same promise and reuse the result.
 export async function refreshAccessToken() {
-  const res = await fetch(`${API_BASE}/auth/refresh/`, {
-    method: "POST",
-    credentials: "include",
-  });
-  if (!res.ok) {
-    setAccessToken(null);
-    throw new Error("AUTH_REQUIRED");
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/refresh/`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        setAccessToken(null);
+        throw new Error("AUTH_REQUIRED");
+      }
+      const data = await res.json();
+      setAccessToken(data.access);
+      return data;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+// ── Proactive silent refresh ──
+// Refreshes the access token before it expires so that the user
+// never hits a 401 during normal navigation.
+
+export function scheduleProactiveRefresh() {
+  clearProactiveRefresh();
+  const delay = ACCESS_TOKEN_LIFETIME_MS - REFRESH_BEFORE_EXPIRY_MS;
+  proactiveRefreshTimer = setTimeout(async () => {
+    try {
+      await refreshAccessToken();
+    } catch {
+      // Silent failure — the reactive 401-path will handle it
+    }
+  }, delay);
+}
+
+export function clearProactiveRefresh() {
+  if (proactiveRefreshTimer) {
+    clearTimeout(proactiveRefreshTimer);
+    proactiveRefreshTimer = null;
   }
-  const data = await res.json();
-  setAccessToken(data.access);
-  return data;
+}
+
+// Schedule proactive refresh on module load if an access token already exists
+if (accessToken) {
+  // The token may be partially expired already; schedule conservatively.
+  // We don't know the exact issued-at time, so do one early refresh
+  // to catch most cases on page reload within the same tab.
+  setTimeout(async () => {
+    try {
+      await refreshAccessToken();
+    } catch {
+      setAccessToken(null);
+    }
+  }, 2 * 60 * 1000); // 2 min after initial load
 }
 
 export async function logoutUser() {
+  clearProactiveRefresh();
   await fetch(`${API_BASE}/auth/logout/`, {
     method: "POST",
     credentials: "include",
@@ -79,14 +140,19 @@ export async function fetchPlaces(buildingId) {
 }
 
 async function fetchJson(path, { method = "GET", body } = {}) {
-  const headers = {};
-  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
-  if (body && !(body instanceof FormData)) headers["Content-Type"] = "application/json";
+  // Build headers INSIDE a function so they always pick up the
+  // current (potentially refreshed) access token — no stale closure.
+  const buildHeaders = () => {
+    const h = {};
+    if (accessToken) h["Authorization"] = `Bearer ${accessToken}`;
+    if (body && !(body instanceof FormData)) h["Content-Type"] = "application/json";
+    return h;
+  };
 
   const doFetch = () =>
     fetch(`${API_BASE}${path}`, {
       method,
-      headers,
+      headers: buildHeaders(),      // ← fresh headers on every call
       credentials: "include",
       body:
         body instanceof FormData
@@ -98,15 +164,30 @@ async function fetchJson(path, { method = "GET", body } = {}) {
 
   let res = await doFetch();
 
-  if (res.status === 401 && accessToken) {
+  // On 401/403 with an access token present, the token may be expired
+  // or corrupted. Try a silent refresh once and retry the request.
+  // DRF returns 401 (NotAuthenticated) when all authenticators fail,
+  // but can return 403 (PermissionDenied) in some flows (e.g. CSRF
+  // failure on SessionAuthentication). We attempt a refresh on both,
+  // but only retry 403 if the refresh actually produced a *different*
+  // token — otherwise it's a genuine permission denial (e.g. non-admin
+  // hitting an admin endpoint).
+  if ((res.status === 401 || res.status === 403) && accessToken) {
     try {
-      await refreshAccessToken();
-      res = await doFetch();
+      const oldToken = accessToken;
+      await refreshAccessToken();   // mutex-guarded — safe under concurrency
+      // Only retry 403 if the token genuinely changed (stale → fresh).
+      // A genuine 403 (wrong role) won't change with a new token.
+      const tokenChanged = accessToken && accessToken !== oldToken;
+      if (res.status === 401 || tokenChanged) {
+        res = await doFetch();      // ← rebuilds headers with the NEW token
+      }
     } catch {
       throw new Error("AUTH_REQUIRED");
     }
   }
 
+  // After refresh-retry, if it's STILL 401/403 the session is truly dead
   if (res.status === 401 || res.status === 403) {
     setAccessToken(null);
     throw new Error("AUTH_REQUIRED");
