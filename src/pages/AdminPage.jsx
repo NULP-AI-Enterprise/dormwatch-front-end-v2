@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   fetchPendingComplaints, 
   fetchApprovedComplaints, 
@@ -10,20 +11,52 @@ import {
   postComment,
   deleteComment,
   fetchUserProfile,
-  CATEGORY_LABELS 
+  CATEGORY_LABELS,
+  fetchTickets,
+  createTicket
 } from "../services/problemsApi";
 import Preloader from "../components/Preloader";
 
 const SERVER_URL = "http://127.0.0.1:8000";
 
 const AdminPage = () => {
+  const [activeTab, setActiveTab] = useState("requests"); // "requests" | "tickets"
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("pending");
 
+  const [ticketCategory, setTicketCategory] = useState("all");
+  const [ticketStatus, setTicketStatus] = useState("all");
+
   const [items, setItems] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [approvedForTickets, setApprovedForTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [selectedComplaintForTicket, setSelectedComplaintForTicket] = useState(null);
+  const [ticketDeadline, setTicketDeadline] = useState("");
+  const navigate = useNavigate();
+
+  // Перевірка авторизації
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const user = await fetchUserProfile();
+        if (!user) {
+          navigate("/");
+          return;
+        }
+        const isAdmin = user.role && ["admin", "адміністратор"].includes((user.role.role_name || "").toLowerCase());
+        if (!isAdmin) {
+          navigate("/");
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+    checkAuth();
+  }, [navigate]);
 
   const [openCommentsId, setOpenCommentsId] = useState(null);
   const [commentsData, setCommentsData] = useState({});
@@ -68,6 +101,33 @@ const AdminPage = () => {
   };
 
   useEffect(() => { loadItems(); }, [selectedStatus]);
+
+  useEffect(() => {
+    if (activeTab === "tickets") {
+      fetchTickets().then(setTickets);
+      fetchApprovedComplaints("new").then(setApprovedForTickets);
+    }
+  }, [activeTab]);
+
+  const openTicketModal = (complaint) => {
+    setSelectedComplaintForTicket(complaint);
+    setTicketDeadline("");
+    setIsTicketModalOpen(true);
+  };
+
+  const handleConfirmCreateTicket = async () => {
+    if (!selectedComplaintForTicket) return;
+    try {
+      await createTicket(selectedComplaintForTicket.id, ticketDeadline || null);
+      alert("Тікет створено!");
+      const newTickets = await fetchTickets();
+      setTickets(newTickets);
+      setIsTicketModalOpen(false);
+      setSelectedComplaintForTicket(null);
+    } catch (e) {
+      alert("Помилка створення тікета");
+    }
+  };
 
   const handleChangeStatus = async (id, newStatus) => {
     const ok = confirm("Оновити статус заявки?");
@@ -148,6 +208,17 @@ const AdminPage = () => {
     });
   }, [items, selectedCategory]);
 
+  const filteredTicketsList = useMemo(() => {
+    return approvedForTickets.filter((p) => {
+      const categoryOk = ticketCategory === "all" ? true : String(p.category) === String(ticketCategory);
+      const hasTicket = tickets.some(t => t.complaint === p.id);
+      const statusOk = ticketStatus === "all" ? true : 
+                       ticketStatus === "created" ? hasTicket : 
+                       !hasTicket;
+      return categoryOk && statusOk;
+    });
+  }, [approvedForTickets, tickets, ticketCategory, ticketStatus]);
+
   const humanLocation = (p) => {
     const b = p.building ? `Корпус №${p.building}` : "Корпус ?";
     const place = p.placeName ? `${p.placeName}` : "Місце ?";
@@ -156,16 +227,38 @@ const AdminPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 lg:mb-10 gap-4 sm:gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 sm:mb-6 lg:mb-8 gap-4 sm:gap-6">
         <div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Адміністрування</h2>
-          <p className="text-sm sm:text-base text-slate-500 mt-1">Керування заявками</p>
+          <p className="text-sm sm:text-base text-slate-500 mt-1">Комендант-центр</p>
         </div>
-
-
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-6 sm:gap-8">
+      <div className="flex gap-4 border-b border-slate-200 mb-6 sm:mb-8">
+        <button
+          onClick={() => setActiveTab("requests")}
+          className={`pb-3 px-1 text-sm sm:text-base font-bold border-b-2 transition-colors ${
+            activeTab === "requests"
+              ? "border-indigo-600 text-indigo-600"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+          }`}
+        >
+          Керування заявками
+        </button>
+        <button
+          onClick={() => setActiveTab("tickets")}
+          className={`pb-3 px-1 text-sm sm:text-base font-bold border-b-2 transition-colors ${
+            activeTab === "tickets"
+              ? "border-indigo-600 text-indigo-600"
+              : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+          }`}
+        >
+          Керування тікетами
+        </button>
+      </div>
+
+      {activeTab === "requests" && (
+        <div className="grid lg:grid-cols-4 gap-6 sm:gap-8">
         <div className="lg:col-span-1 space-y-4 sm:space-y-6">
           <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-slate-100 shadow-sm">
             <h4 className="text-sm sm:text-base font-bold mb-3 sm:mb-4">Статус</h4>
@@ -233,9 +326,12 @@ const AdminPage = () => {
                       </span>
                     </div>
 
-                    <div className="flex gap-2 mb-3">
+                    <div className="flex flex-wrap gap-2 mb-3">
                       <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-md uppercase">
                         {CATEGORY_LABELS[p.category] || p.category || "Категорія"}
+                      </span>
+                      <span className={`px-2 py-1 text-[10px] font-black rounded-md uppercase ${p.priority === 'high' ? 'bg-red-100 text-red-700' : p.priority === 'low' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                        Пріоритет: {p.priority === 'high' ? 'Високий' : p.priority === 'low' ? 'Низький' : 'Середній'}
                       </span>
                       {p.createdAt && <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-black rounded-md uppercase">{new Date(p.createdAt).toLocaleString()}</span>}
                     </div>
@@ -308,7 +404,150 @@ const AdminPage = () => {
               );
           })}
         </div>
-      </div>
+        </div>
+      )}
+
+      {activeTab === "tickets" && (
+        <div className="grid lg:grid-cols-4 gap-6 sm:gap-8">
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-slate-100 shadow-sm">
+              <h4 className="text-sm sm:text-base font-bold mb-3 sm:mb-4">Наявність тікета</h4>
+              <div className="space-y-2">
+                {[
+                  { id: "all", name: "Всі" },
+                  { id: "not_created", name: "Без тікета" },
+                  { id: "created", name: "З тікетом" }
+                ].map((s) => (
+                  <label key={s.id} className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg sm:rounded-xl cursor-pointer ${ticketStatus === s.id ? "bg-indigo-50" : "hover:bg-slate-50"}`}>
+                    <input type="radio" checked={ticketStatus === s.id} onChange={() => setTicketStatus(s.id)} className="w-4 h-4 text-indigo-600" />
+                    <span className={`text-xs sm:text-sm ${ ticketStatus === s.id ? "font-bold text-indigo-900" : "font-medium text-slate-600" }`}>
+                      {s.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-slate-100 shadow-sm">
+              <h4 className="text-sm sm:text-base font-bold mb-3 sm:mb-4">Категорії</h4>
+              <div className="space-y-2">
+                {categoryOptions.map((cat) => (
+                  <label key={cat.id} className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg sm:rounded-xl cursor-pointer ${ticketCategory === cat.id ? "bg-indigo-50" : "hover:bg-slate-50"}`}>
+                    <input type="radio" checked={ticketCategory === cat.id} onChange={() => setTicketCategory(cat.id)} className="w-4 h-4 text-indigo-600" />
+                    <span className={`text-xs sm:text-sm ${ ticketCategory === cat.id ? "font-bold text-indigo-900" : "font-medium text-slate-600" }`}>
+                      {cat.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-3 space-y-6">
+            <h3 className="text-xl font-bold text-slate-900">Тікети для підтверджених заявок</h3>
+            {filteredTicketsList.length === 0 ? (
+              <div className="bg-white p-10 rounded-2xl border border-slate-100 text-center">
+                <p className="text-slate-500 text-sm">Немає заявок з вибраними параметрами.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-6">
+                {filteredTicketsList.map(p => {
+                  const ticket = tickets.find(t => t.complaint === p.id);
+                  return (
+                    <div key={p.id} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="text-lg font-black text-slate-900">{p.title || "Без заголовку"}</h4>
+                          <span className={`px-2 py-1 text-[10px] font-black rounded-md uppercase whitespace-nowrap ${p.priority === 'high' ? 'bg-red-100 text-red-700' : p.priority === 'low' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                            {p.priority === 'high' ? 'Високий' : p.priority === 'low' ? 'Низький' : 'Середній'}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 mb-3 items-center">
+                          <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-md uppercase">
+                            {CATEGORY_LABELS[p.category] || p.category || "Категорія"}
+                          </span>
+                          <span className="text-xs text-slate-500 font-medium">{humanLocation(p)}</span>
+                        </div>
+                        <p className="text-sm text-slate-600 mb-4 line-clamp-3">{p.description}</p>
+                      </div>
+                      <div>
+                        {ticket ? (
+                          <div className="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+                            <p className="text-xs font-bold text-indigo-900">Тікет створено (ID: {ticket.ticket_id})</p>
+                            {ticket.deadline && <p className="text-xs text-indigo-700 mt-1">Дедлайн: {new Date(ticket.deadline).toLocaleDateString()}</p>}
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={() => openTicketModal(p)}
+                            className="w-full px-4 py-2 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition-colors"
+                          >
+                            Створити тікет
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal for creating ticket */}
+      {isTicketModalOpen && selectedComplaintForTicket && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-[2rem] w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-2xl font-black text-slate-900">Створити тікет</h2>
+              <button onClick={() => setIsTicketModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Complaint info */}
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <h4 className="font-bold text-slate-900">{selectedComplaintForTicket.title}</h4>
+                <p className="text-xs text-slate-500 mt-1">{humanLocation(selectedComplaintForTicket)}</p>
+                <div className="mt-2 flex gap-2">
+                  <span className="px-2 py-1 bg-slate-200 text-slate-700 text-[10px] font-black rounded-md uppercase">
+                    {CATEGORY_LABELS[selectedComplaintForTicket.category] || selectedComplaintForTicket.category}
+                  </span>
+                  <span className={`px-2 py-1 text-[10px] font-black rounded-md uppercase ${selectedComplaintForTicket.priority === 'high' ? 'bg-red-100 text-red-700' : selectedComplaintForTicket.priority === 'low' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                    Пріоритет: {selectedComplaintForTicket.priority === 'high' ? 'Високий' : selectedComplaintForTicket.priority === 'low' ? 'Низький' : 'Середній'}
+                  </span>
+                </div>
+                {selectedComplaintForTicket.photoUrl && (
+                  <div className="mt-4 w-full h-40 rounded-lg overflow-hidden bg-slate-200">
+                    <img src={selectedComplaintForTicket.photoUrl.startsWith("http") || selectedComplaintForTicket.photoUrl.startsWith("blob:") ? selectedComplaintForTicket.photoUrl : `${SERVER_URL}/api${selectedComplaintForTicket.photoUrl}`} alt="problem" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              {/* Form fields */}
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Дедлайн виконання</label>
+                <input 
+                  type="date" 
+                  value={ticketDeadline}
+                  onChange={(e) => setTicketDeadline(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button onClick={() => setIsTicketModalOpen(false)} className="flex-1 px-4 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200">
+                  Скасувати
+                </button>
+                <button onClick={handleConfirmCreateTicket} className="flex-1 px-4 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700">
+                  Зберегти тікет
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

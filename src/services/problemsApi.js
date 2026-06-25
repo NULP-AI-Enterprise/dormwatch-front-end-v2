@@ -169,6 +169,7 @@ function normalizeComplaint(raw) {
     floor: safeFloor,
     photoUrl: raw.photo_url ?? raw.photoUrl ?? null,
     status: status,
+    priority: raw.priority ?? "medium",
     votesCount: Number(raw.votesCount || raw.counter || 0),
     createdAt: raw.created_at || raw.createdAt || nowIso,
     user_id: raw.user?.id || raw.user?.user || raw.user || null,
@@ -189,9 +190,9 @@ export async function fetchUserProfile() {
 
 export async function createProblem(problem) {
   const formData = new FormData();
-  formData.append("building_number", problem.building);
-  formData.append("floor_number", problem.floor);
-  formData.append("room_number", problem.room);
+  if (problem.place_name) {
+    formData.append("place_name", problem.place_name);
+  }
   formData.append("category", problem.category);
   formData.append("title", problem.title);
   formData.append("description", problem.description);
@@ -362,5 +363,27 @@ export async function changeUserRoom(building, floor, room) {
       floor_number: parseInt(floor),
       room_number: String(room),
     },
+  });
+}
+
+export async function fetchTickets() {
+  try {
+    const data = await fetchJson("/tickets/");
+    if (Array.isArray(data)) {
+      return data;
+    }
+  } catch (e) {
+    console.warn("Fetch tickets error:", e);
+  }
+  return [];
+}
+
+export async function createTicket(complaintId, deadline) {
+  return await fetchJson("/tickets/", {
+    method: "POST",
+    body: {
+      complaint: complaintId,
+      deadline: deadline || null
+    }
   });
 }

@@ -17,12 +17,24 @@ const CreateReportPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
 
   // Перевірка авторизації
 useEffect(() => {
     async function checkAuth() {
       try {
-        await fetchUserProfile();
+        const user = await fetchUserProfile();
+        if (user) {
+          const isAdmin = user.role && ["admin", "адміністратор"].includes((user.role.role_name || "").toLowerCase());
+          if (isAdmin) {
+            navigate("/admin");
+            return;
+          }
+          setUserProfile(user);
+          if (user.place && user.place.place_name) {
+            setFormData(prev => ({ ...prev, placeName: user.place.place_name }));
+          }
+        }
       } catch (e) {
          console.warn("Помилка завантаження профілю", e);
       } finally {
@@ -30,7 +42,7 @@ useEffect(() => {
       }
     }
     checkAuth();
-  }, []);
+  }, [navigate]);
 
   const categories = useMemo(
     () => [
@@ -82,6 +94,7 @@ useEffect(() => {
         title: formData.title.trim(),
         description: formData.description.trim(),
         priority: formData.priority,
+        place_name: formData.placeName?.trim() || undefined,
         photoFile: photoFile, 
       });
 
@@ -196,6 +209,20 @@ useEffect(() => {
                   maxLength={80}
                   className="w-full p-3 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl text-sm sm:text-base font-bold outline-none focus:ring-2 focus:ring-indigo-500"
                   required
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-2 uppercase tracking-wider">
+                  Місце проблеми
+                </label>
+                <input
+                  type="text"
+                  name="placeName"
+                  value={formData.placeName || ""}
+                  onChange={handleInputChange}
+                  placeholder="Напр. кімната 404, коридор 3 поверху..."
+                  maxLength={100}
+                  className="w-full p-3 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl text-sm sm:text-base font-bold outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
