@@ -7,9 +7,8 @@ import {
   fetchUserProfile, 
   CATEGORY_LABELS 
 } from "../services/problemsApi";
+import { resolveImageUrl } from "../services/imageUtils";
 import Preloader from "../components/Preloader";
-
-const SERVER_URL = "http://127.0.0.1:8000";
 
 const statusBadge = (status) => {
   const s = String(status || "new").toLowerCase();
@@ -174,7 +173,7 @@ const UserPage = () => {
               {p.photoUrl && (
                 <div className="w-full h-48 sm:h-64 rounded-xl sm:rounded-2xl overflow-hidden shadow-inner bg-slate-100 mt-4 sm:mt-6">
                   <img
-                    src={ p.photoUrl.startsWith("blob:") || p.photoUrl.startsWith("http") ? p.photoUrl : `${SERVER_URL}/api${p.photoUrl}`}
+                    src={resolveImageUrl(p.thumbnail || p.photoUrl)}
                     className="w-full h-full object-cover"
                     onError={(e) => { e.target.style.display = 'none'; }}
                   />

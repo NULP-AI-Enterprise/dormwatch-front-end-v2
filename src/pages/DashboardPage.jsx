@@ -9,9 +9,8 @@ import {
   postComment,
   deleteComment
 } from "../services/problemsApi"; 
+import { resolveImageUrl } from "../services/imageUtils";
 import Preloader from "../components/Preloader";
-
-const SERVER_URL = "http://127.0.0.1:8000";
 
 const PhotoModal = ({ src, onClose }) => {
   if (!src) return null;
@@ -293,13 +292,9 @@ const DashboardPage = () => {
                       {problem.photoUrl && (
                         <div 
                           className="w-full h-40 sm:h-48 rounded-xl sm:rounded-2xl overflow-hidden bg-slate-100 mb-4 sm:mb-6 cursor-zoom-in group-hover:shadow-md transition-shadow"
-                          onClick={() => setPreviewImage(
-                              problem.photoUrl.startsWith("blob:") || problem.photoUrl.startsWith("http")
-                              ? problem.photoUrl
-                              : `${SERVER_URL}/api${problem.photoUrl}`
-                          )}
+                          onClick={() => setPreviewImage(resolveImageUrl(problem.photoUrl))}
                         >
-                          <img src={problem.photoUrl.startsWith("blob:") || problem.photoUrl.startsWith("http") ? problem.photoUrl : `${SERVER_URL}/api${problem.photoUrl}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.style.display = 'none'; }} />
+                          <img src={resolveImageUrl(problem.thumbnail || problem.photoUrl)} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.style.display = 'none'; }} />
                         </div>
                       )}
                       

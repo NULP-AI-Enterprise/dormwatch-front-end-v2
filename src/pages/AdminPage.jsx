@@ -17,9 +17,8 @@ import {
   fetchEmployees,
   updateTicket
 } from "../services/problemsApi";
+import { resolveImageUrl } from "../services/imageUtils";
 import Preloader from "../components/Preloader";
-
-const SERVER_URL = "http://127.0.0.1:8000";
 
 const AdminPage = () => {
   const location = useLocation();
@@ -444,7 +443,7 @@ const AdminPage = () => {
 
                     {p.photoUrl && (
                       <div className="w-full h-44 sm:h-56 rounded-2xl overflow-hidden bg-slate-100 mb-4">
-                        <img src={ p.photoUrl.startsWith("http") || p.photoUrl.startsWith("blob:") ? p.photoUrl : `${SERVER_URL}/api${p.photoUrl}` } alt="problem" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                        <img src={resolveImageUrl(p.thumbnail || p.photoUrl)} alt="problem" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
                       </div>
                     )}
 
@@ -682,7 +681,7 @@ const AdminPage = () => {
                 </div>
                 {selectedComplaintForTicket.photoUrl && (
                   <div className="mt-4 w-full h-40 rounded-lg overflow-hidden bg-slate-200">
-                    <img src={selectedComplaintForTicket.photoUrl.startsWith("http") || selectedComplaintForTicket.photoUrl.startsWith("blob:") ? selectedComplaintForTicket.photoUrl : `${SERVER_URL}/api${selectedComplaintForTicket.photoUrl}`} alt="problem" className="w-full h-full object-cover" />
+                    <img src={resolveImageUrl(selectedComplaintForTicket.thumbnail || selectedComplaintForTicket.photoUrl)} alt="problem" className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>

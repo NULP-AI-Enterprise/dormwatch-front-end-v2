@@ -249,6 +249,7 @@ function normalizeComplaint(raw) {
     placeName: safeRoom,
     floor: safeFloor,
     photoUrl: raw.photo_url ?? raw.photoUrl ?? null,
+    thumbnail: raw.thumbnail ?? null,
     status: status,
     priority: raw.priority ?? "medium",
     votesCount: Number(raw.votesCount || raw.counter || 0),
