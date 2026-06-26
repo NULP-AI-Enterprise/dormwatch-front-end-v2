@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   fetchUserProfile,
-  loginUser,
-  registerUser,
   logoutUser,
   updateUserProfile,
   changeUserRoom,
-  fetchBuildings,
-  fetchPlaces,
   fetchAllComplaints,
 } from "../services/problemsApi";
 import { Building2, Home, Phone, LogOut } from "lucide-react";
@@ -17,8 +13,6 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import UserPage from "./UserPage";
-
-const EMAIL_DOMAIN_HINT = "@lpnu.ua";
 
 const AdminProfileView = () => {
   const [stats, setStats] = useState({
@@ -176,6 +170,7 @@ const AdminProfileView = () => {
 };
 
 const AccountPage = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -193,45 +188,15 @@ const AccountPage = () => {
     room: "",
   });
 
-  const [activeTab, setActiveTab] = useState("login");
-
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-
-  const [regForm, setRegForm] = useState({
-    email: "",
-    password: "",
-    confirm_password: "",
-    first_name: "",
-    last_name: "",
-    building_id: "",
-    place_id: "",
-  });
-  const [regError, setRegError] = useState("");
-  const [regSuccess, setRegSuccess] = useState("");
-  const [buildings, setBuildings] = useState<any[]>([]);
-  const [places, setPlaces] = useState<any[]>([]);
-
   useEffect(() => {
     loadProfile();
   }, []);
 
   useEffect(() => {
-    if (!user) {
-      fetchBuildings().then(setBuildings).catch(() => {});
+    if (!loading && !user) {
+      navigate("/auth", { replace: true });
     }
-  }, [user]);
-
-  useEffect(() => {
-    if (regForm.building_id) {
-      fetchPlaces(regForm.building_id)
-        .then(setPlaces)
-        .catch(() => setPlaces([]));
-    } else {
-      setPlaces([]);
-    }
-  }, [regForm.building_id]);
+  }, [loading, user, navigate]);
 
   const loadProfile = async () => {
     setLoading(true);
@@ -255,59 +220,6 @@ const AccountPage = () => {
       setUser(null);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError("");
-    try {
-      await loginUser(loginEmail, loginPassword);
-      await loadProfile();
-      window.dispatchEvent(new Event("profileUpdated"));
-      setLoginEmail("");
-      setLoginPassword("");
-    } catch (err: any) {
-      setLoginError(err.message || "Невірний email або пароль");
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setRegError("");
-    setRegSuccess("");
-
-    if (regForm.password !== regForm.confirm_password) {
-      setRegError("Паролі не співпадають");
-      return;
-    }
-
-    const payload: Record<string, any> = {
-      email: regForm.email,
-      password: regForm.password,
-      confirm_password: regForm.confirm_password,
-      first_name: regForm.first_name,
-      last_name: regForm.last_name,
-    };
-    if (regForm.place_id) {
-      payload.place_id = parseInt(regForm.place_id);
-    }
-
-    try {
-      await registerUser(payload);
-      setRegSuccess("Реєстрація успішна!");
-      setTimeout(async () => {
-        await loadProfile();
-        window.dispatchEvent(new Event("profileUpdated"));
-      }, 500);
-    } catch (err: any) {
-      try {
-        const parsed = JSON.parse(err.message);
-        const msgs = Object.values(parsed).flat().join("; ");
-        setRegError(msgs || "Помилка реєстрації");
-      } catch {
-        setRegError(err.message || "Помилка реєстрації");
-      }
     }
   };
 
@@ -357,235 +269,7 @@ const AccountPage = () => {
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="w-full max-w-lg bg-card border border-border">
-          <div className="flex border-b border-border">
-            <button
-              onClick={() => {
-                setActiveTab("login");
-                setLoginError("");
-              }}
-              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
-                activeTab === "login"
-                  ? "text-foreground border-b-2 border-primary bg-primary/5"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Увійти
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("register");
-                setRegError("");
-                setRegSuccess("");
-              }}
-              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
-                activeTab === "register"
-                  ? "text-foreground border-b-2 border-primary bg-primary/5"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Зареєструватися
-            </button>
-          </div>
-
-          <div className="p-8">
-            {activeTab === "login" ? (
-              <form onSubmit={handleLogin} className="space-y-5">
-                <h2 className="text-xl font-bold text-foreground text-center mb-4">
-                  Вхід
-                </h2>
-                {loginError && (
-                  <div className="p-3 border border-destructive/30 bg-destructive/10 text-destructive text-xs font-medium text-center">
-                    {loginError}
-                  </div>
-                )}
-                <div>
-                  <label className="micro-label block mb-2">Email</label>
-                  <Input
-                    type="email"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder={`yourname${EMAIL_DOMAIN_HINT}`}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="micro-label block mb-2">Пароль</label>
-                  <Input
-                    type="password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full text-xs font-bold uppercase tracking-wider">
-                  Увійти
-                </Button>
-              </form>
-            ) : (
-              <form onSubmit={handleRegister} className="space-y-4">
-                <h2 className="text-xl font-bold text-foreground text-center mb-4">
-                  Реєстрація
-                </h2>
-                {regError && (
-                  <div className="p-3 border border-destructive/30 bg-destructive/10 text-destructive text-xs font-medium">
-                    {regError}
-                  </div>
-                )}
-                {regSuccess && (
-                  <div className="p-3 border border-green-500/30 bg-green-500/10 text-green-500 text-xs font-medium">
-                    {regSuccess}
-                  </div>
-                )}
-                <div>
-                  <label className="micro-label block mb-1.5">Email</label>
-                  <Input
-                    type="email"
-                    name="email"
-                    value={regForm.email}
-                    onChange={(e) =>
-                      setRegForm((prev) => ({
-                        ...prev,
-                        [e.target.name]: e.target.value,
-                      }))
-                    }
-                    placeholder={`yourname${EMAIL_DOMAIN_HINT}`}
-                    required
-                  />
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    Дозволені домени: {EMAIL_DOMAIN_HINT}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="micro-label block mb-1.5">Пароль</label>
-                    <Input
-                      type="password"
-                      name="password"
-                      value={regForm.password}
-                      onChange={(e) =>
-                        setRegForm((prev) => ({
-                          ...prev,
-                          [e.target.name]: e.target.value,
-                        }))
-                      }
-                      required
-                      minLength={8}
-                    />
-                  </div>
-                  <div>
-                    <label className="micro-label block mb-1.5">
-                      Підтвердження
-                    </label>
-                    <Input
-                      type="password"
-                      name="confirm_password"
-                      value={regForm.confirm_password}
-                      onChange={(e) =>
-                        setRegForm((prev) => ({
-                          ...prev,
-                          [e.target.name]: e.target.value,
-                        }))
-                      }
-                      required
-                      minLength={8}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="micro-label block mb-1.5">Ім'я</label>
-                    <Input
-                      type="text"
-                      name="first_name"
-                      value={regForm.first_name}
-                      onChange={(e) =>
-                        setRegForm((prev) => ({
-                          ...prev,
-                          [e.target.name]: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="micro-label block mb-1.5">
-                      Прізвище
-                    </label>
-                    <Input
-                      type="text"
-                      name="last_name"
-                      value={regForm.last_name}
-                      onChange={(e) =>
-                        setRegForm((prev) => ({
-                          ...prev,
-                          [e.target.name]: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="micro-label block mb-1.5">
-                    Гуртожиток
-                  </label>
-                  <select
-                    name="building_id"
-                    value={regForm.building_id}
-                    onChange={(e) =>
-                      setRegForm((prev) => ({
-                        ...prev,
-                        [e.target.name]: e.target.value,
-                      }))
-                    }
-                    className="w-full h-8 border border-input bg-transparent px-2 text-xs outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
-                  >
-                    <option value="">Оберіть гуртожиток</option>
-                    {buildings.map((b: any) => (
-                      <option key={b.building_id} value={b.building_id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {regForm.building_id && places.length > 0 && (
-                  <div>
-                    <label className="micro-label block mb-1.5">
-                      Кімната
-                    </label>
-                    <select
-                      name="place_id"
-                      value={regForm.place_id}
-                      onChange={(e) =>
-                        setRegForm((prev) => ({
-                          ...prev,
-                          [e.target.name]: e.target.value,
-                        }))
-                      }
-                      className="w-full h-8 border border-input bg-transparent px-2 text-xs outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
-                    >
-                      <option value="">Оберіть кімнату</option>
-                      {places.map((p: any) => (
-                        <option key={p.place_id} value={p.place_id}>
-                          {p.place_name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                <Button
-                  type="submit"
-                  className="w-full text-xs font-bold uppercase tracking-wider mt-2"
-                >
-                  Зареєструватися
-                </Button>
-              </form>
-            )}
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const placeObj = user.place;

@@ -130,13 +130,21 @@ export async function logoutUser() {
 }
 
 export async function fetchBuildings() {
-  const res = await fetch(`${API_BASE}/buildings/`);
-  return res.json();
+  try {
+    return await fetchJson("/buildings/");
+  } catch (e) {
+    console.warn("Failed to fetch buildings", e);
+    return [];
+  }
 }
 
 export async function fetchPlaces(buildingId) {
-  const res = await fetch(`${API_BASE}/places/?building_id=${buildingId}`);
-  return res.json();
+  try {
+    return await fetchJson(`/places/?building_id=${buildingId}`);
+  } catch (e) {
+    console.warn("Failed to fetch places", e);
+    return [];
+  }
 }
 
 async function fetchJson(path, { method = "GET", body } = {}) {

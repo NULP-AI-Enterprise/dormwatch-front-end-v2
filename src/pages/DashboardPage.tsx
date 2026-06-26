@@ -8,6 +8,7 @@ import {
   fetchComments,
   postComment,
   deleteComment,
+  CATEGORY_LABELS,
 } from "../services/problemsApi";
 import { resolveImageUrl } from "../services/imageUtils";
 import { ChevronUp, MessageSquare, X, Search, Trash2, Send } from "lucide-react";
@@ -15,6 +16,30 @@ import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogClose,
+} from "../components/ui/dialog";
+import { statusBadgeClass, statusLabel } from "../lib/complaintUtils";
 
 const categories = [
   { id: "all", name: "Всі" },
@@ -23,24 +48,6 @@ const categories = [
   { id: "furniture", name: "Меблі" },
   { id: "internet", name: "Інтернет" },
 ];
-
-const statusBadge = (status: string) => {
-  switch (status) {
-    case "urgent": return "badge-urgent";
-    case "resolved": return "badge-resolved";
-    case "approved": return "badge-progress";
-    default: return "badge-pending";
-  }
-};
-
-const statusText = (status: string) => {
-  switch (status) {
-    case "resolved": return "Вирішено";
-    case "approved": return "Активно";
-    case "rejected": return "Відхилено";
-    default: return "Очікує";
-  }
-};
 
 const DashboardPage = () => {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -77,13 +84,38 @@ const DashboardPage = () => {
     loadData();
   }, [activeCorps, activePriority]);
 
+    const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const [deleteCommentTarget, setDeleteCommentTarget] = useState<{ complaintId: number; commentId: number } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Ви впевнені, що хочете видалити цю заявку?")) return;
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget === null) return;
     try {
-      await deleteProblem(id);
-      setProblems((prev) => prev.filter((p) => p.id !== id));
-    } catch (error) {
-      alert("Помилка при видаленні");
+      await deleteProblem(deleteTarget);
+      setProblems((prev) => prev.filter((p) => p.id !== deleteTarget));
+    } catch {
+      setErrorMessage("Помилка при видаленні");
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  const confirmDeleteComment = async () => {
+    if (!deleteCommentTarget) return;
+    try {
+      await deleteComment(deleteCommentTarget.commentId);
+      setCommentsData((prev) => ({
+        ...prev,
+        [deleteCommentTarget.complaintId]: prev[deleteCommentTarget.complaintId].filter((c: any) => c.id !== deleteCommentTarget.commentId),
+      }));
+    } catch {
+      setErrorMessage("Помилка видалення коментаря");
+    } finally {
+      setDeleteCommentTarget(null);
     }
   };
 
@@ -128,21 +160,12 @@ const DashboardPage = () => {
       setCommentsData((prev) => ({ ...prev, [id]: comms }));
       setCommentInput("");
     } catch {
-      alert("Не вдалось відправити коментар");
+      setErrorMessage("Не вдалось відправити коментар");
     }
   };
 
-  const handleDeleteComment = async (complaintId: number, commentId: number) => {
-    if (!confirm("Видалити цей коментар?")) return;
-    try {
-      await deleteComment(commentId);
-      setCommentsData((prev) => ({
-        ...prev,
-        [complaintId]: prev[complaintId].filter((c: any) => c.id !== commentId),
-      }));
-    } catch {
-      alert("Помилка видалення коментаря");
-    }
+  const handleDeleteComment = (complaintId: number, commentId: number) => {
+    setDeleteCommentTarget({ complaintId, commentId });
   };
 
   const filteredProblems = problems.filter((p) => {
@@ -166,31 +189,28 @@ const DashboardPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent animate-spin" />
       </div>
     );
   }
 
   return (
     <>
-      {previewImage && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 cursor-zoom-in"
-          onClick={() => setPreviewImage(null)}
-        >
-          <img
-            src={previewImage}
-            className="max-w-full max-h-[90vh] border border-border"
-            alt="Full size"
-          />
-          <button
-            onClick={() => setPreviewImage(null)}
-            className="absolute top-4 right-4 text-foreground"
-          >
+      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
+        <DialogContent className="max-w-4xl bg-stone-900/95 border-border p-0" showCloseButton={false}>
+          <DialogTitle className="sr-only">Image preview</DialogTitle>
+          {previewImage && (
+            <img
+              src={previewImage}
+              className="w-full h-auto max-h-[90vh] object-contain"
+              alt="Full size"
+            />
+          )}
+          <DialogClose className="absolute top-4 right-4 text-foreground hover:text-stone-300">
             <X className="w-6 h-6" strokeWidth={2} />
-          </button>
-        </div>
-      )}
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
 
       <main className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6">
@@ -211,30 +231,32 @@ const DashboardPage = () => {
                   className="pl-8 w-48"
                 />
               </div>
-              <select
-                value={activeCorps}
-                onChange={(e) => setActiveCorps(e.target.value)}
-                className="h-8 border border-input bg-transparent px-2 text-xs outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
-              >
-                <option value="all">Всі гуртожитки</option>
-                <option value="Гуртожиток 1">Гуртожиток 1</option>
-                <option value="Гуртожиток 2">Гуртожиток 2</option>
-                <option value="Гуртожиток 3">Гуртожиток 3</option>
-                <option value="Гуртожиток 4">Гуртожиток 4</option>
-                <option value="Гуртожиток 5">Гуртожиток 5</option>
-                <option value="Гуртожиток 6">Гуртожиток 6</option>
-              </select>
-              <select
-                value={activePriority}
-                onChange={(e) => setActivePriority(e.target.value)}
-                className="h-8 border border-input bg-transparent px-2 text-xs outline-none focus:border-ring focus:ring-1 focus:ring-ring/50"
-              >
-                <option value="all">Всі пріоритети</option>
-                <option value="low">Низький</option>
-                <option value="medium">Середній</option>
-                <option value="high">Високий</option>
-                <option value="critical">Критичний</option>
-              </select>
+              <Select value={activeCorps} onValueChange={setActiveCorps}>
+                <SelectTrigger className="w-36 h-8 text-xs">
+                  <SelectValue placeholder="Всі гуртожитки" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Всі гуртожитки</SelectItem>
+                  <SelectItem value="Гуртожиток 1">Гуртожиток 1</SelectItem>
+                  <SelectItem value="Гуртожиток 2">Гуртожиток 2</SelectItem>
+                  <SelectItem value="Гуртожиток 3">Гуртожиток 3</SelectItem>
+                  <SelectItem value="Гуртожиток 4">Гуртожиток 4</SelectItem>
+                  <SelectItem value="Гуртожиток 5">Гуртожиток 5</SelectItem>
+                  <SelectItem value="Гуртожиток 6">Гуртожиток 6</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={activePriority} onValueChange={setActivePriority}>
+                <SelectTrigger className="w-36 h-8 text-xs">
+                  <SelectValue placeholder="Всі пріоритети" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Всі пріоритети</SelectItem>
+                  <SelectItem value="low">Низький</SelectItem>
+                  <SelectItem value="medium">Середній</SelectItem>
+                  <SelectItem value="high">Високий</SelectItem>
+                  <SelectItem value="critical">Критичний</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
@@ -299,8 +321,8 @@ const DashboardPage = () => {
                     <div className="flex-1 p-5">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
                         <div className="flex flex-wrap gap-2">
-                          <Badge variant="outline" className={statusBadge(problem.status)}>
-                            {statusText(problem.status)}
+                          <Badge variant="outline" className={statusBadgeClass(problem.status)}>
+                            {statusLabel(problem.status)}
                           </Badge>
                           <Badge variant="outline" className="text-muted-foreground border-border bg-muted">
                             {categories.find((c) => c.id === problem.category)?.name || problem.category}
@@ -441,6 +463,42 @@ const DashboardPage = () => {
           </div>
         </div>
       </main>
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Видалити заявку?</AlertDialogTitle>
+            <AlertDialogDescription>Цю дію не можна скасувати.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Скасувати</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Видалити</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={deleteCommentTarget !== null} onOpenChange={(open) => { if (!open) setDeleteCommentTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Видалити коментар?</AlertDialogTitle>
+            <AlertDialogDescription>Цю дію не можна скасувати.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Скасувати</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteComment}>Видалити</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={!!errorMessage} onOpenChange={(open) => { if (!open) setErrorMessage(null); }}>
+        <DialogContent>
+          <DialogTitle>Помилка</DialogTitle>
+          <p className="text-sm text-muted-foreground">{errorMessage}</p>
+          <DialogClose asChild>
+            <Button variant="outline" className="mt-2" onClick={() => setErrorMessage(null)}>OK</Button>
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
