@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import { Separator } from "./ui/separator";
 
@@ -13,8 +12,8 @@ const Footer = () => {
         </div>
 
         <div className="flex gap-6 text-sm text-stone-500 font-semibold">
-          <Link to="/account" className="hover:text-stone-300 transition-colors">Конфіденційність</Link>
-          <Link to="/account" className="hover:text-stone-300 transition-colors">Умови використання</Link>
+          <a href="#" className="hover:text-stone-300 transition-colors">Конфіденційність</a>
+          <a href="#" className="hover:text-stone-300 transition-colors">Умови використання</a>
           <Link to="/dashboard" className="hover:text-stone-300 transition-colors">Статус системи</Link>
           <a href="mailto:support@dormwatch.edu" className="hover:text-stone-300 transition-colors">Контакти</a>
         </div>

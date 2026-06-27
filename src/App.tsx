@@ -5,7 +5,6 @@ import AdminPage from "./pages/AdminPage";
 import AdminComplaintsPage from "./pages/AdminComplaintsPage";
 import CreateReportPage from "./pages/CreateReportPage";
 import DashboardPage from "./pages/DashboardPage";
-import AccountPage from "./pages/AccountPage";
 import AuthPage from "./pages/AuthPage";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -30,7 +29,6 @@ function App() {
                 <Route path="/user" element={<UserPage />} />
                 <Route path="/create-report" element={<CreateReportPage />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/account" element={<AccountPage />} />
               </Routes>
             </main>
             <Footer />

@@ -406,12 +406,13 @@ const AdminComplaintsPage = () => {
                           <>
                             <Separator dashed className="border-stone-700 mt-4" />
                             <div className="bg-stone-900/30 p-4">
-                            <CommentSection
-                              complaintId={p.id}
-                              currentUserId={currentUser?.user}
-                              isAdmin={true}
-                            />
-                          </div>
+                              <CommentSection
+                                complaintId={p.id}
+                                currentUserId={currentUser?.user}
+                                isAdmin={true}
+                              />
+                            </div>
+                          </>
                         )}
                       </div>
                     </Card>
@@ -562,9 +563,8 @@ const AdminComplaintsPage = () => {
               editTicket={ticketToEdit}
             />
           </div>
-                            </div>
-                          </>
-                        )}
+        </div>
+      )}
     </div>
   );
 };

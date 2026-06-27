@@ -57,7 +57,7 @@ const HomePage = () => {
 
           <div className="flex items-center gap-4">
             <Link
-              to="/account"
+              to="/auth"
               className="bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 text-sm font-bold transition-colors border border-blue-700"
             >
               Вхід для студентів
@@ -207,7 +207,7 @@ const HomePage = () => {
           <p className="text-stone-400 mb-8 text-lg">Увійдіть за допомогою студентського квитка, щоб надіслати заявку безпосередньо до служби експлуатації кампусу.</p>
           <div className="flex justify-center gap-4">
             <Link
-              to="/account"
+              to="/auth"
               className="bg-blue-800 hover:bg-blue-900 text-white px-8 py-4 text-base font-bold transition-colors border border-blue-700 inline-flex items-center gap-2"
             >
               Розпочати
