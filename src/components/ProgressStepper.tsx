@@ -20,7 +20,7 @@ const ProgressStepper = ({ stage }: ProgressStepperProps) => {
           <span
             key={s.key}
             className={cn(
-              "text-[9px] font-semibold uppercase tracking-wider transition-colors",
+              "text-[9px] font-semibold transition-colors",
               i === currentIdx
                 ? s.accent
                 : i < currentIdx

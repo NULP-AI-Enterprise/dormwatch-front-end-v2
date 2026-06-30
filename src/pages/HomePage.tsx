@@ -33,15 +33,14 @@ const HomePage = () => {
 
   if (checkingAuth) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] dark bg-stone-900">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <LoadingSpinner size="lg" className="border-blue-500" />
       </div>
     );
   }
 
   return (
-    <div className="dark bg-stone-900 min-h-screen flex flex-col antialiased">
-      {/* Navigation */}
+    <div className="min-h-screen flex flex-col">
       <nav className="bg-stone-900/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 text-blue-500 font-bold text-xl tracking-tight">
@@ -67,7 +66,6 @@ const HomePage = () => {
         <Separator />
       </nav>
 
-      {/* Hero Section */}
       <section className="relative pt-24 pb-32 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
           <div className="relative z-10">
@@ -79,7 +77,7 @@ const HomePage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                to="/create-report"
+                to="/auth"
                 className="bg-blue-800 hover:bg-blue-900 text-white px-6 py-3 text-base font-bold transition-colors flex items-center justify-center gap-2 border border-blue-700"
               >
                 Повідомити про проблему
@@ -98,30 +96,27 @@ const HomePage = () => {
           <div className="relative w-full aspect-square max-w-lg mx-auto lg:ml-auto">
             <div className="absolute inset-0 bg-stone-800 border border-stone-700 transform rotate-3 scale-95 opacity-50" />
             <div className="absolute inset-0 bg-stone-800 border border-stone-700 transform -rotate-2 scale-100 opacity-80" />
-
             <div className="absolute inset-0 bg-stone-900 border border-stone-700 shadow-2xl p-6 flex flex-col gap-4">
               <div className="flex justify-between items-center pb-4">
                 <div className="w-32 h-4 bg-stone-800" />
                 <div className="w-8 h-8 bg-blue-900 border border-blue-800" />
               </div>
               <Separator />
-
               <div className="bg-stone-800 border border-stone-700 p-4 group hover:border-stone-500 transition-colors relative overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">Сантехніка</span>
-                  <span className="px-2 py-0.5 bg-yellow-900/30 text-yellow-500 border border-yellow-700/50 text-[10px] uppercase font-bold tracking-wider">Очікує</span>
+                  <span className="text-[10px] text-stone-400 font-semibold">Сантехніка</span>
+                  <span className="px-2 py-0.5 bg-yellow-900/30 text-yellow-500 border border-yellow-700/50 text-[10px] font-bold">Очікує</span>
                 </div>
                 <div className="w-3/4 h-3 bg-stone-700 mb-2" />
                 <div className="w-full h-2 bg-stone-700 mb-1" />
                 <div className="w-2/3 h-2 bg-stone-700" />
               </div>
-
               <div className="bg-stone-800 border border-stone-700 p-4 group hover:border-stone-500 transition-colors relative overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">Опалення</span>
-                  <span className="px-2 py-0.5 bg-blue-900/30 text-blue-500 border border-blue-700/50 text-[10px] uppercase font-bold tracking-wider">В роботі</span>
+                  <span className="text-[10px] text-stone-400 font-semibold">Опалення</span>
+                  <span className="px-2 py-0.5 bg-blue-900/30 text-blue-500 border border-blue-700/50 text-[10px] font-bold">В роботі</span>
                 </div>
                 <div className="w-1/2 h-3 bg-stone-700 mb-2" />
                 <div className="w-full h-2 bg-stone-700 mb-1" />
@@ -132,37 +127,34 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Stats Banner */}
       <Separator />
       <div className="bg-stone-900">
         <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-stone-800">
           <div className="text-center px-4">
             <p className="text-3xl font-bold text-stone-50 mb-1">15с</p>
-            <p className="text-xs uppercase tracking-widest text-stone-400 font-semibold">На подачу заявки</p>
+            <p className="text-xs text-stone-400 font-semibold">На подачу заявки</p>
           </div>
           <div className="text-center px-4">
             <p className="text-3xl font-bold text-stone-50 mb-1">24/7</p>
-            <p className="text-xs uppercase tracking-widest text-stone-400 font-semibold">Екстрена підтримка</p>
+            <p className="text-xs text-stone-400 font-semibold">Екстрена підтримка</p>
           </div>
           <div className="text-center px-4">
             <p className="text-3xl font-bold text-stone-50 mb-1">100%</p>
-            <p className="text-xs uppercase tracking-widest text-stone-400 font-semibold">Охоплення кампусу</p>
+            <p className="text-xs text-stone-400 font-semibold">Охоплення кампусу</p>
           </div>
           <div className="text-center px-4">
             <p className="text-3xl font-bold text-stone-50 mb-1">Прямий</p>
-            <p className="text-xs uppercase tracking-widest text-stone-400 font-semibold">Зв'язок із майстрами</p>
+            <p className="text-xs text-stone-400 font-semibold">Зв'язок із майстрами</p>
           </div>
         </div>
       </div>
       <Separator />
 
-      {/* Features Grid */}
       <section className="py-24 max-w-7xl mx-auto px-6" id="how-it-works">
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-stone-50 mb-4">Більше жодних загублених заявок.</h2>
           <p className="text-stone-400 max-w-2xl text-lg">Ми замінили незручні паперові форми та проігноровані електронні листи на чітку, прозору систему заявок, яка дійсно працює.</p>
         </div>
-
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-stone-800 border border-stone-700 p-8 relative group hover:border-stone-500 transition-colors">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -174,7 +166,6 @@ const HomePage = () => {
               Не намагайтеся пояснити, де протікає. Просто зробіть фото, вкажіть номер кімнати, і наша система автоматично направить заявку до потрібного відділу.
             </p>
           </div>
-
           <div className="bg-stone-800 border border-stone-700 p-8 relative group hover:border-stone-500 transition-colors">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="w-12 h-12 bg-stone-900 border border-stone-600 mb-6 flex items-center justify-center">
@@ -185,7 +176,6 @@ const HomePage = () => {
               Припиніть гадати, чи бачив хтось вашу заявку. Отримуйте оновлення статусу в реальному часі, коли ваша заявка переглядається, призначається майстру та вирішується.
             </p>
           </div>
-
           <div className="bg-stone-800 border border-stone-700 p-8 relative group hover:border-stone-500 transition-colors">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="w-12 h-12 bg-stone-900 border border-stone-600 mb-6 flex items-center justify-center">
@@ -199,7 +189,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
       <Separator />
       <section className="bg-stone-900 py-20 relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">

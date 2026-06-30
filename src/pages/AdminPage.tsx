@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   fetchAllComplaints,
-  fetchUserProfile,
 } from "../services/problemsApi";
-import AdminSidebar from "../components/AdminSidebar";
-import { StatCard, StatCardSkeleton } from "../components/StatCard";
 import ComplaintSidePanel from "../components/ComplaintSidePanel";
+import { StatCard, StatCardSkeleton } from "../components/StatCard";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Separator } from "../components/ui/separator";
@@ -19,35 +17,25 @@ import {
   TableCell,
 } from "../components/ui/table";
 import { Clock, Hammer, CheckCircle, Download, Plus } from "lucide-react";
-import { statusBadgeClass, statusLabel, isAdminUser, getUserInitials } from "../lib/complaintUtils";
+import { statusBadgeClass, statusLabel } from "../lib/complaintUtils";
 import { CATEGORY_LABELS } from "../services/problemsApi";
+import { useUser } from "../context/UserContext";
 
 const AdminPage = () => {
-  const navigate = useNavigate();
+  const { user: currentUser } = useUser();
   const [complaints, setComplaints] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     const init = async () => {
-      const user = await fetchUserProfile().catch(() => null);
-      if (!user) {
-        navigate("/");
-        return;
-      }
-      if (!isAdminUser(user)) {
-        navigate("/");
-        return;
-      }
-      setCurrentUser(user);
       const data = await fetchAllComplaints();
       setComplaints(data);
       setLoading(false);
     };
     init();
-  }, [navigate]);
+  }, []);
 
   const pendingCount = complaints.filter((c) => c.status === "pending").length;
   const inProgressCount = complaints.filter((c) => c.status === "approved").length;
@@ -67,22 +55,9 @@ const AdminPage = () => {
     setComplaints(data);
   };
 
-  const initials = getUserInitials(currentUser, "AD");
-
-  const userName = currentUser
-    ? `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim() || "Admin"
-    : "Admin";
-
   return (
-    <div className="flex min-h-screen dark bg-stone-900">
-      <AdminSidebar
-        userName={userName}
-        userRole="Адміністратор"
-        initials={initials}
-      />
-
-      <div className="flex-1 flex flex-col min-h-screen">
-        <header className="h-16 bg-stone-800 flex items-center justify-between px-6 lg:px-8 shrink-0">
+    <div className="flex-1 flex flex-col min-h-screen">
+      <header className="h-16 bg-stone-800 flex items-center justify-between px-6 lg:px-8 shrink-0">
           <h1 className="text-2xl font-bold text-stone-50">Інформаційна панель</h1>
           <div className="flex items-center gap-3">
             <Button
@@ -202,7 +177,7 @@ const AdminPage = () => {
                             {c.description}
                           </p>
                         </TableCell>
-                        <TableCell className="px-6 py-4 text-[10px] uppercase tracking-widest text-stone-400 font-semibold">
+                        <TableCell className="px-6 py-4 text-[10px] text-stone-400 font-semibold">
                           {CATEGORY_LABELS[c.category as keyof typeof CATEGORY_LABELS] || c.category}
                         </TableCell>
                         <TableCell className="px-6 py-4 text-sm text-stone-300">
@@ -221,14 +196,6 @@ const AdminPage = () => {
             </div>
           </div>
         </div>
-
-        <footer className="p-4">
-          <Separator className="mb-4" />
-          <p className="text-[9px] font-semibold text-stone-500 uppercase tracking-wider text-center">
-            DormWatch &middot; Система керування об'єктами
-          </p>
-        </footer>
-      </div>
 
       <ComplaintSidePanel
         complaint={selectedComplaint}

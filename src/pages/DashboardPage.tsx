@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   fetchApprovedComplaints,
-  fetchUserProfile,
   deleteProblem,
   voteComplaint,
   fetchBuildings,
@@ -40,6 +39,7 @@ import CommentSection from "../components/CommentSection";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Separator } from "../components/ui/separator";
 import { statusBadgeClass, statusLabel, isAdminUser } from "../lib/complaintUtils";
+import { useUser } from "../context/UserContext";
 
 const categories = [
   { id: "all", name: "Всі" },
@@ -50,13 +50,13 @@ const categories = [
 ];
 
 const DashboardPage = () => {
+  const { user: currentUser } = useUser();
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeCorps, setActiveCorps] = useState("all");
   const [activePriority, setActivePriority] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [problems, setProblems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const [openCommentsId, setOpenCommentsId] = useState<number | null>(null);
@@ -75,12 +75,8 @@ const DashboardPage = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [complaintsData, userData] = await Promise.all([
-          fetchApprovedComplaints("new", { corps: activeCorps, priority: activePriority }).catch(() => []),
-          fetchUserProfile().catch(() => null),
-        ]);
+        const complaintsData = await fetchApprovedComplaints("new", { corps: activeCorps, priority: activePriority }).catch(() => []);
         if (Array.isArray(complaintsData)) setProblems(complaintsData);
-        setCurrentUser(userData);
       } catch (error) {
         console.error("Critical dashboard error:", error);
       } finally {
@@ -219,7 +215,7 @@ const DashboardPage = () => {
                   variant={activeCategory === category.id ? "default" : "outline"}
                   size="xs"
                   onClick={() => setActiveCategory(category.id)}
-                  className="text-[10px] font-semibold uppercase tracking-widest"
+                  className="text-[10px] font-semibold"
                 >
                   {category.name}
                 </Button>
@@ -267,7 +263,7 @@ const DashboardPage = () => {
                         <span className="text-base font-bold leading-none">
                           {problem.votesCount || 0}
                         </span>
-                        <span className="text-[8px] font-semibold uppercase tracking-tight">
+                        <span className="text-[8px] font-semibold tracking-tight">
                           {hasVoted ? "Ваш голос" : "Голос"}
                         </span>
                       </Button>
@@ -359,14 +355,14 @@ const DashboardPage = () => {
 
           <div className="lg:col-span-1 space-y-4">
             <div className="bg-primary p-6 text-primary-foreground">
-              <h4 className="text-xs font-semibold uppercase tracking-wider mb-4">
+              <h4 className="text-xs font-semibold mb-4">
                 Дії
               </h4>
               {admin ? (
                 <Button
                   asChild
                   size="sm"
-                  className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/80 text-[10px] font-bold uppercase tracking-wider"
+                  className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/80 text-[10px] font-bold"
                 >
                   <Link to="/admin">Перейти в комендант-центр</Link>
                 </Button>
@@ -374,7 +370,7 @@ const DashboardPage = () => {
                 <Button
                   asChild
                   size="sm"
-                  className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/80 text-[10px] font-bold uppercase tracking-wider"
+                  className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/80 text-[10px] font-bold"
                 >
                   <Link to="/create-report">Створити нову заявку</Link>
                 </Button>

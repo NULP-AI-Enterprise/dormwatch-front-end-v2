@@ -67,7 +67,7 @@ const ComplaintSidePanel = ({
               <Badge variant="outline" className={statusBadgeClass(complaint.status)}>
                 {statusLabel(complaint.status)}
               </Badge>
-              <span className="text-[9px] font-semibold uppercase tracking-widest text-stone-500">
+              <span className="text-[9px] font-semibold text-stone-500">
                 {complaint.id !== "new" && `#${complaint.id}`}
               </span>
             </div>
@@ -118,7 +118,7 @@ const ComplaintSidePanel = ({
                     <Button
                       size="sm"
                       onClick={() => handleStatusChange("approved")}
-                      className="text-[10px] font-bold uppercase tracking-wider"
+                      className="text-[10px] font-bold"
                     >
                       Схвалити
                     </Button>
@@ -126,7 +126,7 @@ const ComplaintSidePanel = ({
                       size="sm"
                       variant="destructive"
                       onClick={() => handleStatusChange("rejected")}
-                      className="text-[10px] font-bold uppercase tracking-wider"
+                      className="text-[10px] font-bold"
                     >
                       Відхилити
                     </Button>
@@ -136,7 +136,7 @@ const ComplaintSidePanel = ({
                   <Button
                     size="sm"
                     onClick={() => handleStatusChange("resolved")}
-                    className="text-[10px] font-bold uppercase tracking-wider"
+                    className="text-[10px] font-bold"
                   >
                     Позначити вирішеним
                   </Button>
@@ -145,7 +145,7 @@ const ComplaintSidePanel = ({
                   size="sm"
                   variant="destructive"
                   onClick={handleDelete}
-                  className="text-[10px] font-bold uppercase tracking-wider"
+                  className="text-[10px] font-bold"
                 >
                   <Trash2 className="w-3 h-3 mr-1" strokeWidth={2} />
                   Видалити
@@ -158,7 +158,7 @@ const ComplaintSidePanel = ({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="w-full text-[10px] font-bold uppercase tracking-wider"
+                  className="w-full text-[10px] font-bold"
                   onClick={() => setShowTicketForm(true)}
                 >
                   <Ticket className="w-3 h-3 mr-1" strokeWidth={2} />

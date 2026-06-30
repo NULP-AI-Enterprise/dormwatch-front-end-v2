@@ -309,7 +309,7 @@ const AuthPage = () => {
                       <FormItem>
                         <FormLabel>Пароль</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="••••••••" className="font-mono tracking-widest" {...field} />
+                          <Input type="password" placeholder="••••••••" className="font-mono" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -322,7 +322,7 @@ const AuthPage = () => {
                       <FormItem>
                         <FormLabel>Підтвердження паролю</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="••••••••" className="font-mono tracking-widest" {...field} />
+                          <Input type="password" placeholder="••••••••" className="font-mono" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -395,7 +395,7 @@ const AuthPage = () => {
                       </a>
                     </div>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" className="font-mono tracking-widest" {...field} />
+                      <Input type="password" placeholder="••••••••" className="font-mono" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

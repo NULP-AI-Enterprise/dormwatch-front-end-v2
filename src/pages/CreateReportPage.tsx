@@ -5,8 +5,6 @@ import { ArrowLeft, Camera, Droplets, Zap, Armchair, Wifi, X } from "lucide-reac
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
-import LoadingSpinner from "../components/LoadingSpinner";
-import { isAdminUser } from "../lib/complaintUtils";
 
 const categories = [
   { id: "plumbing", label: "Сантехніка", Icon: Droplets },
@@ -28,32 +26,14 @@ const CreateReportPage = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [loadingAuth, setLoadingAuth] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const user = await fetchUserProfile();
-        if (user) {
-          if (isAdminUser(user)) {
-            navigate("/admin");
-            return;
-          }
-          if (user.place && user.place.place_name) {
-            setFormData((prev) => ({
-              ...prev,
-              placeName: user.place.place_name,
-            }));
-          }
-        }
-      } catch {
-        console.warn("Помилка завантаження профілю");
-      } finally {
-        setLoadingAuth(false);
+    fetchUserProfile().then((user) => {
+      if (user?.place?.place_name) {
+        setFormData((prev) => ({ ...prev, placeName: user.place.place_name }));
       }
-    };
-    checkAuth();
-  }, [navigate]);
+    }).catch(() => {});
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -106,14 +86,6 @@ const CreateReportPage = () => {
     }
   };
 
-  if (loadingAuth) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <LoadingSpinner size="md" />
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <div className="flex items-center gap-4 mb-10">
@@ -155,7 +127,7 @@ const CreateReportPage = () => {
                     strokeWidth={2}
                   />
                   <span
-                    className={`text-[10px] font-semibold uppercase tracking-widest ${
+                    className={`text-[10px] font-semibold ${
                       isActive ? "text-primary-foreground" : "text-muted-foreground"
                     }`}
                   >
@@ -184,7 +156,7 @@ const CreateReportPage = () => {
                     onClick={() =>
                       setFormData((prev) => ({ ...prev, priority: p.id }))
                     }
-                    className="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                    className="flex-1 py-2 text-[10px] font-bold transition-colors"
                   >
                     {p.label}
                   </Button>
@@ -273,7 +245,7 @@ const CreateReportPage = () => {
           type="submit"
           size="lg"
           disabled={submitting}
-          className="w-full font-bold text-sm uppercase tracking-wider"
+          className="w-full font-bold text-sm"
         >
           {submitting ? "Публікую..." : "Опублікувати звернення"}
         </Button>

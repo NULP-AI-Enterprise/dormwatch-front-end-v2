@@ -31,7 +31,7 @@ const StatCard = ({ icon, label, value, sparklineColor = "var(--primary)", spark
       <div className="relative z-10">
         <div className="flex items-center gap-2 text-stone-400 mb-4">
           <span className="text-stone-400">{icon}</span>
-          <span className="text-xs font-semibold uppercase tracking-widest">{label}</span>
+          <span className="text-xs font-semibold">{label}</span>
         </div>
         <div className="text-3xl font-bold text-stone-50 mb-2">{value}</div>
       </div>

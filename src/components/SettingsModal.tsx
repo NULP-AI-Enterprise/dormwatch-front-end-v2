@@ -23,6 +23,7 @@ import {
   updateUserProfile,
   changeUserRoom,
   fetchBuildings,
+  logoutUser,
 } from "@/services/problemsApi";
 import {
   Building2,
@@ -31,8 +32,11 @@ import {
   User,
   Camera,
   ShieldAlert,
+  Briefcase,
+  LogOut,
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { isAdminUser } from "@/lib/complaintUtils";
 
 const CONTACT_PHONES = {
   commandant: "093 123 45 67",
@@ -155,6 +159,13 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
       : `${SERVER_URL}${cleanPath.startsWith("/api") ? "" : "/api"}${cleanPath}`;
   }
 
+  const isAdmin = isAdminUser(user);
+
+  const handleLogout = async () => {
+    await logoutUser();
+    window.location.href = "/auth";
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -182,9 +193,16 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-foreground truncate">
-                {user ? `${user.first_name} ${user.last_name}` : "Завантаження..."}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-bold text-foreground truncate">
+                  {user ? `${user.first_name} ${user.last_name}` : "Завантаження..."}
+                </p>
+                {user && (
+                  <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold border shrink-0 ${isAdmin ? "bg-yellow-900/30 text-yellow-500 border-yellow-700/50" : "bg-blue-900/30 text-blue-400 border-blue-700/50"}`}>
+                    {isAdmin ? "Адмін" : "Студент"}
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] text-muted-foreground truncate">
                 {user?.email}
               </p>
@@ -228,7 +246,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                           />
                         </div>
                         <label className="cursor-pointer">
-                          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-primary hover:underline">
+                          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-primary hover:underline">
                             <Camera className="w-3 h-3" strokeWidth={2} />
                             Змінити фото
                           </span>
@@ -284,13 +302,13 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                         <Button
                           onClick={handleSaveProfile}
                           disabled={saving}
-                          className="flex-1 text-[10px] font-bold uppercase tracking-wider"
+                          className="flex-1 text-[10px] font-bold"
                         >
                           {saving ? "Зберігаю..." : "Зберегти"}
                         </Button>
                         <Button
                           variant="outline"
-                          className="flex-1 text-[10px] font-bold uppercase tracking-wider"
+                          className="flex-1 text-[10px] font-bold"
                           onClick={() => {
                             setIsEditing(false);
                             setPhotoFile(null);
@@ -356,12 +374,24 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 text-[10px] font-bold uppercase tracking-wider"
+                          className="flex-1 text-[10px] font-bold"
                           onClick={() => setIsEditing(true)}
                         >
                           Редагувати профіль
                         </Button>
                       </div>
+
+                      <Separator dashed />
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-[10px] font-bold text-red-400 hover:text-red-300 hover:bg-red-900/10"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="w-3 h-3 mr-1.5" strokeWidth={2} />
+                        Вийти
+                      </Button>
                     </div>
                   )}
                 </TabsContent>
@@ -382,7 +412,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                     <Separator dashed />
 
                     <div>
-                      <p className="text-xs font-bold text-primary uppercase mb-3">
+                      <p className="text-xs font-bold text-primary mb-3">
                         Зміна кімнати
                       </p>
                       <div className="grid grid-cols-2 gap-3">
@@ -434,7 +464,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                       <Button
                         onClick={handleSaveProfile}
                         disabled={saving}
-                        className="w-full mt-4 text-[10px] font-bold uppercase tracking-wider"
+                        className="w-full mt-4 text-[10px] font-bold"
                       >
                         {saving ? "Зберігаю..." : "Зберегти розміщення"}
                       </Button>
@@ -443,24 +473,39 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                 </TabsContent>
 
                 <TabsContent value="contacts" className="mt-0 focus-visible:ring-0 focus-visible:outline-none">
-                  <div className="space-y-3">
-                    <div className="p-3 bg-muted border border-border">
-                      <p className="micro-label mb-1">Комендант</p>
-                      <p className="text-xs font-bold text-primary tracking-tight inline-flex items-center gap-1.5">
-                        <Phone className="w-3 h-3" strokeWidth={2} />
-                        {CONTACT_PHONES.commandant}
-                      </p>
+                  <h4 className="text-[10px] font-bold text-stone-400 mb-6">
+                    Екстрені контакти
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4 bg-muted border border-border p-4">
+                      <div className="p-2 bg-card border border-border shrink-0">
+                        <Briefcase className="w-4 h-4 text-primary" strokeWidth={2} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground">
+                          Комендант
+                        </p>
+                        <p className="text-sm font-bold text-foreground mt-0.5">
+                          {CONTACT_PHONES.commandant}
+                        </p>
+                      </div>
                     </div>
-                    <div className="p-3 bg-muted border border-border">
-                      <p className="micro-label mb-1">Черговий майстер</p>
-                      <p className="text-xs font-bold text-primary tracking-tight inline-flex items-center gap-1.5">
-                        <Phone className="w-3 h-3" strokeWidth={2} />
-                        {CONTACT_PHONES.dutyMaster}
-                      </p>
+                    <div className="flex items-center gap-4 bg-muted border border-border p-4">
+                      <div className="p-2 bg-card border border-border shrink-0">
+                        <Phone className="w-4 h-4 text-primary" strokeWidth={2} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground">
+                          Черговий майстер
+                        </p>
+                        <p className="text-sm font-bold text-foreground mt-0.5">
+                          {CONTACT_PHONES.dutyMaster}
+                        </p>
+                      </div>
                     </div>
                     <div className="p-3 border border-dashed border-border text-center">
                       <ShieldAlert className="w-5 h-5 text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
-                      <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                      <p className="text-[10px] text-muted-foreground font-semibold">
                         Екстрені ситуації — телефонуйте 101 або 112
                       </p>
                     </div>

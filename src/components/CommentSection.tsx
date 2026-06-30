@@ -52,7 +52,7 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionP
       <div className="flex items-center gap-2 mb-3">
         <button
           onClick={loadComments}
-          className="text-[10px] font-semibold uppercase tracking-wider text-primary hover:underline"
+          className="text-[10px] font-semibold text-primary hover:underline"
         >
           {comments.length > 0 ? `Коментарі (${comments.length})` : "Завантажити коментарі"}
         </button>

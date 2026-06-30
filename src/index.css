@@ -213,7 +213,6 @@ input:-webkit-autofill:active {
     padding-bottom: 0.125rem;
     font-size: 0.625rem;
     line-height: 1.25;
-    text-transform: uppercase;
     letter-spacing: 0.2em;
     font-weight: 600;
     border-width: 1px;
@@ -223,7 +222,6 @@ input:-webkit-autofill:active {
   .micro-label {
     font-size: 0.625rem;
     line-height: 1.25;
-    text-transform: uppercase;
     letter-spacing: 0.2em;
     font-weight: 600;
     color: var(--muted-foreground);

@@ -68,7 +68,7 @@ const TicketCreateForm = ({ onClose, onSaved, editTicket }: TicketCreateFormProp
   return (
     <div className="space-y-5">
       <div>
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-2 block">
+        <label className="text-[10px] font-semibold text-stone-400 mb-2 block">
           Заявка
         </label>
         <Select value={selectedComplaint} onValueChange={setSelectedComplaint}>
@@ -86,7 +86,7 @@ const TicketCreateForm = ({ onClose, onSaved, editTicket }: TicketCreateFormProp
       </div>
 
       <div>
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-2 block">
+        <label className="text-[10px] font-semibold text-stone-400 mb-2 block">
           Призначити працівника
         </label>
         <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
@@ -104,7 +104,7 @@ const TicketCreateForm = ({ onClose, onSaved, editTicket }: TicketCreateFormProp
       </div>
 
       <div>
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-2 block">
+        <label className="text-[10px] font-semibold text-stone-400 mb-2 block">
           Дедлайн
         </label>
         <Input
@@ -116,11 +116,11 @@ const TicketCreateForm = ({ onClose, onSaved, editTicket }: TicketCreateFormProp
       </div>
 
       <div className="flex gap-3 pt-2">
-        <Button variant="outline" className="flex-1 text-[10px] font-bold uppercase tracking-wider" onClick={onClose}>
+        <Button variant="outline" className="flex-1 text-[10px] font-bold" onClick={onClose}>
           Скасувати
         </Button>
         <Button
-          className="flex-1 text-[10px] font-bold uppercase tracking-wider"
+          className="flex-1 text-[10px] font-bold"
           onClick={handleSave}
           disabled={saving || !selectedComplaint}
         >

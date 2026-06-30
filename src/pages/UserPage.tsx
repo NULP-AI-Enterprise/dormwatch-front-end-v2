@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   fetchMyProblems,
   deleteProblem,
-  fetchUserProfile,
   CATEGORY_LABELS,
 } from "../services/problemsApi";
 import { resolveImageUrl } from "../services/imageUtils";
@@ -17,6 +16,7 @@ import { Card } from "../components/ui/card";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Separator } from "../components/ui/separator";
 import { statusBadgeClass, statusLabel, isAdminUser } from "../lib/complaintUtils";
+import { useUser } from "../context/UserContext";
 import {
   Trash2,
   MessageSquare,
@@ -26,10 +26,9 @@ import {
 } from "lucide-react";
 
 const UserPage = () => {
-  const navigate = useNavigate();
+  const { user: currentUser } = useUser();
   const [problems, setProblems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const [openCommentsId, setOpenCommentsId] = useState<number | null>(null);
 
@@ -38,13 +37,6 @@ const UserPage = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const user = await fetchUserProfile().catch(() => null);
-        if (!alive) return;
-        setCurrentUser(user);
-        if (!user) {
-          navigate("/");
-          return;
-        }
         const data = await fetchMyProblems();
         if (!alive) return;
         setProblems(Array.isArray(data) ? data : []);
@@ -56,7 +48,7 @@ const UserPage = () => {
     };
     loadData();
     return () => { alive = false; };
-  }, [navigate]);
+  }, []);
 
   const onDelete = async (id: number) => {
     try {
@@ -73,21 +65,20 @@ const UserPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] dark bg-stone-900">
+      <div className="flex items-center justify-center min-h-[50vh]">
         <LoadingSpinner size="lg" className="border-blue-500" />
       </div>
     );
   }
 
   return (
-    <div className="dark bg-stone-900 min-h-screen">
-      <div className="max-w-5xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList variant="line" className="mb-8">
-            <TabsTrigger value="dashboard" className="text-xs font-bold uppercase tracking-wider">
+            <TabsTrigger value="dashboard" className="text-xs font-bold">
               Панель
             </TabsTrigger>
-            <TabsTrigger value="reports" className="text-xs font-bold uppercase tracking-wider">
+            <TabsTrigger value="reports" className="text-xs font-bold">
               Мої заявки
             </TabsTrigger>
           </TabsList>
@@ -95,7 +86,7 @@ const UserPage = () => {
           <TabsContent value="dashboard">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-stone-50 tracking-tight">Hello, {firstName}!</h1>
-              <p className="text-stone-400 mt-1 flex items-center gap-2 text-sm uppercase tracking-widest">
+              <p className="text-stone-400 mt-1 flex items-center gap-2 text-sm">
                 <MapPin className="w-4 h-4 text-stone-400" strokeWidth={1.5} />
                 {building} &bull; Room {room}
               </p>
@@ -172,7 +163,7 @@ const UserPage = () => {
                       <span className="text-base font-bold text-stone-50 leading-none">
                         {p.votesCount || 0}
                       </span>
-                      <span className="text-[8px] font-semibold uppercase text-stone-400">
+                      <span className="text-[8px] font-semibold text-stone-400">
                         голосів
                       </span>
                     </div>
@@ -260,7 +251,6 @@ const UserPage = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
   );
 };
 

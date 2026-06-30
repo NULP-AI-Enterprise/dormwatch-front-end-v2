@@ -1,19 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   fetchAllComplaints,
   fetchApprovedComplaints,
   updateComplaintStatus,
   deleteProblem,
-  fetchUserProfile,
   CATEGORY_LABELS,
   fetchTickets,
   fetchEmployees,
 } from "../services/problemsApi";
 import { resolveImageUrl } from "../services/imageUtils";
-import AdminSidebar from "../components/AdminSidebar";
 import CommentSection from "../components/CommentSection";
 import TicketCreateForm from "../components/TicketCreateForm";
+import { useUser } from "../context/UserContext";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -23,7 +22,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 import { Label } from "../components/ui/label";
 import { Separator } from "../components/ui/separator";
-import { statusBadgeClass, statusLabel, humanLocation, priorityBadgeClass, priorityLabel, isAdminUser, getUserInitials } from "../lib/complaintUtils";
+import { statusBadgeClass, statusLabel, humanLocation, priorityBadgeClass, priorityLabel } from "../lib/complaintUtils";
 import {
   Search,
   Trash2,
@@ -85,7 +84,7 @@ function FilterRadioGroup({
 
 const AdminComplaintsPage = () => {
   const location = useLocation();
-  const navigate = useNavigate();
+  const { user: currentUser } = useUser();
   const [selectedStatus, setSelectedStatus] = useState(location.state?.selectedStatus || "pending");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
@@ -97,7 +96,6 @@ const AdminComplaintsPage = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
-  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [ticketSearchQuery, setTicketSearchQuery] = useState("");
@@ -107,19 +105,6 @@ const AdminComplaintsPage = () => {
   const [selectedForTicket, setSelectedForTicket] = useState<any>(null);
   const [ticketToEdit, setTicketToEdit] = useState<any>(null);
   const [, setEmployees] = useState<any[]>([]);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const user = await fetchUserProfile().catch(() => null);
-      if (!user) {
-        navigate("/");
-        return;
-      }
-      if (!isAdminUser(user)) navigate("/");
-      setCurrentUser(user);
-    };
-    checkAuth();
-  }, [navigate]);
 
   const loadComplaints = async () => {
     setLoading(true);
@@ -209,22 +194,10 @@ const AdminComplaintsPage = () => {
     [approvedForTickets, tickets, ticketCategory, ticketStatus, ticketSearchQuery]
   );
 
-  const initials = getUserInitials(currentUser, "AD");
-
-  const userName = currentUser
-    ? `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim() || "Admin"
-    : "Admin";
-
   return (
-    <div className="flex min-h-screen dark bg-stone-900">
-      <AdminSidebar
-        userName={userName}
-        userRole="Адміністратор"
-        initials={initials}
-      />
-
+    <>
       <div className="flex-1 flex flex-col min-h-screen">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "requests" | "tickets")} className="flex-1 flex flex-col">
+      <Tabs value={tab} onValueChange={(v) => setTab(v as "requests" | "tickets")} className="flex-1 flex flex-col">
           <div className="flex items-center">
             <TabsList variant="line" className="h-auto bg-transparent">
               <TabsTrigger value="requests" className="px-5 py-3 text-xs font-bold">
@@ -252,7 +225,7 @@ const AdminComplaintsPage = () => {
                       />
                     </div>
 
-                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-3">
+                    <h4 className="text-[10px] font-semibold text-stone-400 mb-3">
                       Статус
                     </h4>
                     <FilterRadioGroup
@@ -263,7 +236,7 @@ const AdminComplaintsPage = () => {
 
                     <Separator className="my-4 bg-stone-700" />
 
-                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-3">
+                    <h4 className="text-[10px] font-semibold text-stone-400 mb-3">
                       Категорії
                     </h4>
                     <FilterRadioGroup
@@ -367,7 +340,7 @@ const AdminComplaintsPage = () => {
                                 <Button
                                   size="xs"
                                   onClick={() => handleChangeStatus(p.id, "approved")}
-                                  className="text-[10px] font-bold uppercase tracking-wider"
+                                  className="text-[10px] font-bold"
                                 >
                                   Схвалити
                                 </Button>
@@ -375,7 +348,7 @@ const AdminComplaintsPage = () => {
                                   size="xs"
                                   variant="destructive"
                                   onClick={() => handleChangeStatus(p.id, "rejected")}
-                                  className="text-[10px] font-bold uppercase tracking-wider"
+                                  className="text-[10px] font-bold"
                                 >
                                   Відхилити
                                 </Button>
@@ -385,7 +358,7 @@ const AdminComplaintsPage = () => {
                               <Button
                                 size="xs"
                                 onClick={() => handleChangeStatus(p.id, "resolved")}
-                                className="text-[10px] font-bold uppercase tracking-wider"
+                                className="text-[10px] font-bold"
                               >
                                 Вирішити
                               </Button>
@@ -394,7 +367,7 @@ const AdminComplaintsPage = () => {
                               size="xs"
                               variant="destructive"
                               onClick={() => handleRemove(p.id)}
-                              className="text-[10px] font-bold uppercase tracking-wider"
+                              className="text-[10px] font-bold"
                             >
                               <Trash2 className="w-3 h-3 mr-1" strokeWidth={2} />
                               Видалити
@@ -436,7 +409,7 @@ const AdminComplaintsPage = () => {
                       />
                     </div>
 
-                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-3">
+                    <h4 className="text-[10px] font-semibold text-stone-400 mb-3">
                       Статус тікету
                     </h4>
                     <FilterRadioGroup
@@ -447,7 +420,7 @@ const AdminComplaintsPage = () => {
 
                     <Separator className="my-4 bg-stone-700" />
 
-                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-3">
+                    <h4 className="text-[10px] font-semibold text-stone-400 mb-3">
                       Категорії
                     </h4>
                     <FilterRadioGroup
@@ -520,7 +493,7 @@ const AdminComplaintsPage = () => {
                             ) : (
                               <Button
                                 size="sm"
-                                className="w-full text-[10px] font-bold uppercase tracking-wider"
+                                className="w-full text-[10px] font-bold"
                                 onClick={() => openTicketModal(p)}
                               >
                                 Створити тікет
@@ -565,7 +538,7 @@ const AdminComplaintsPage = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

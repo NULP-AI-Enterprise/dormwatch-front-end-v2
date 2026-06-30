@@ -63,18 +63,59 @@ Form inputs on the login/register pages use a custom focus treatment: a `3px` so
 
 ## 3. Typography
 
-A legible, highly utilitarian sans-serif font ensures readability across all devices.
+### 3.1 Core Rules
 
-*   **Primary Font Family:** Inter Variable (`'Inter Variable', Inter, system-ui, sans-serif`)
-*   **Font Source:** `@fontsource-variable/inter`
-*   **Scale:**
-    *   **Hero Headlines:** 48px–60px (`text-5xl` / `text-6xl`) / Bold / `tracking-tight`
-    *   **Page Titles (H1):** 24px–30px (`text-2xl` / `text-3xl`) / Bold / `tracking-tight`
-    *   **Section Titles (H2):** 18px–20px (`text-lg` / `text-xl`) / Semi-Bold or Bold
-    *   **Body Text:** 14px (`text-sm`) or 12px (`text-xs`) / Regular
-    *   **Button Labels:** 12px (`text-xs`) / Medium / Uppercase / Tracking-Wider / Bold variants
-    *   **Micro-Labels (Categories/Overheads):** 10px (`text-[10px]`) / Semi-Bold / Uppercase / `tracking-widest` (0.2em)
-    *   **Tab Labels / Section Fire Marks:** 12px / Bold / Uppercase / `tracking-wider`
+1. **No raw CSS for visual styles.** Every visual style must use Tailwind utility classes directly in JSX. The only exceptions: CSS custom properties for theme tokens, keyframe animations, and `@layer components` utility classes when a Tailwind combination repeats 3+ times. A single-use custom class is never acceptable.
+2. **No bracket classes where the named scale covers the value.** `text-[10px]`, `w-[420px]`, `h-[32px]`, `gap-[12px]`, `px-[16px]` are banned if `text-xs`, `w-96`, `h-8`, `gap-3`, `px-4` exist. Arbitrary values (`[brackets]`) are only acceptable for truly non-standard dimensions — layout edge cases like `top-[calc(50%-20px)]`. If you reach for brackets, check the Tailwind docs first.
+3. **No positive letter-spacing.** `tracking-wider`, `tracking-widest`, and `letter-spacing` with positive values are banned. They are the typographic equivalent of purple gradients — an artificial "design" signal with no functional purpose.
+4. **`tracking-tight` (negative letter-spacing) is allowed only on display sizes** — Hero (`text-5xl+`) and H1 (`text-2xl+`). Inter's default kerning at large sizes benefits from it.
+5. **No arbitrary pixel font sizes.** `text-[Npx]` is forbidden. Minimum `text-xs` (12px). Use only the named scale.
+6. **No 8px, 9px, 10px, or 11px text anywhere.** If content doesn't fit at `text-xs`, the layout is wrong.
+7. **No uppercase-only convention.** Let content determine its case. Forced uppercase (`uppercase`) is only acceptable for status badges.
+8. **No `.micro-label` as a generic utility.** It must be replaced by specific use-case classes (see §3.3).
+9. **No per-instance button typography overrides.** Button label styling is defined once in the Button component and never overridden with `className`.
+
+### 3.2 Type Scale
+
+| Token | Size | Weight | Tracking | Where |
+|---|---|---|---|---|
+| Hero (H0) | `text-5xl` / `md:text-6xl` | `font-bold` | `tracking-tight` | Landing page hero only |
+| Page title (H1) | `text-2xl` / `md:text-3xl` | `font-bold` | `tracking-tight` | Top of every page/section |
+| Section title (H2) | `text-lg` / `md:text-xl` | `font-semibold` | none | Group headings |
+| Card title (H3) | `text-sm` | `font-semibold` | none | Complaint / ticket card titles |
+| Body | `text-sm` | `font-normal` | none | Paragraphs, descriptions |
+| Metadata | `text-xs` | `font-normal` | none | Dates, locations, secondary info |
+| Badge label | `text-xs` | `font-semibold` | none | Status / category badges |
+| Button label | defined in Button component | `font-semibold` | none | All buttons use component default |
+| Data value | `text-sm` | `font-normal` | none | Displayed user data, counts |
+
+**Weight rules:**
+- Only three weights in use: `font-bold`, `font-semibold`, `font-normal`
+- `font-medium` is not used — it's visually ambiguous between normal and semibold
+- `font-bold` = headings only (H0, H1)
+- `font-semibold` = subheadings (H2, H3), labels, buttons
+- `font-normal` = everything else
+
+### 3.3 Label Classes (replacing `.micro-label`)
+
+Instead of one universal `.micro-label` class, use context-specific tokens:
+
+| Purpose | Class | Background |
+|---|---|---|
+| Form / field label | `label-field` | `text-xs font-semibold text-foreground` |
+| Section header | `label-section` | `text-xs font-semibold text-foreground` |
+| Metadata value | `label-meta` | `text-xs font-normal text-muted-foreground` |
+| Badge / tag | uses `<Badge>` component | `text-xs font-semibold` via badge base class |
+
+This prevents the current pattern where one class serves as form label, section header, metadata value, error message, and action hint.
+
+### 3.4 Button Typography
+
+Defined once in `components/ui/button.tsx`. The base already uses `text-xs font-medium` — change this to `text-xs font-semibold` and remove the tracking. Never add `className="text-[10px] font-bold tracking-wider"` at call sites. If a button needs visual distinction, use the `variant` or `size` props, not font overrides.
+
+### 3.5 Contrast Requirement
+
+All text using `text-xs` or smaller must maintain a minimum 4.5:1 contrast ratio against its background. The current `--muted-foreground` (#a8a29e) on `--card` (#292524) fails this for 12px text. If a label uses `text-xs`, it must use `text-foreground` or a color that passes AA for small text.
 
 ---
 
