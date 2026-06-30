@@ -1,5 +1,6 @@
 import { Building2 } from "lucide-react";
 import { Separator } from "./ui/separator";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
