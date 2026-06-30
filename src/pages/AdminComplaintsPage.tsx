@@ -65,7 +65,7 @@ function FilterRadioGroup({
   return (
     <RadioGroup value={value} onValueChange={onChange} className="space-y-1">
       {options.map((opt) => (
-        <div
+        <label
           key={opt.id}
           className={`flex items-center gap-3 p-2.5 cursor-pointer transition-colors border-l-4 ${
             value === opt.id
@@ -74,10 +74,10 @@ function FilterRadioGroup({
           }`}
         >
           <RadioGroupItem value={opt.id} id={`filter-${opt.id}`} className="w-3.5 h-3.5 accent-blue-500" />
-          <Label htmlFor={`filter-${opt.id}`} className="text-xs font-semibold cursor-pointer">
+          <span className="text-xs font-semibold cursor-pointer">
             {opt.name}
-          </Label>
-        </div>
+          </span>
+        </label>
       ))}
     </RadioGroup>
   );
