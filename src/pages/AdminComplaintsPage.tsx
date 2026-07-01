@@ -225,7 +225,7 @@ const AdminComplaintsPage = () => {
                       />
                     </div>
 
-                    <h4 className="text-[10px] font-semibold text-stone-400 mb-3">
+                    <h4 className="text-xs font-semibold text-stone-400 mb-3">
                       Статус
                     </h4>
                     <FilterRadioGroup
@@ -236,7 +236,7 @@ const AdminComplaintsPage = () => {
 
                     <Separator className="my-4 bg-stone-700" />
 
-                    <h4 className="text-[10px] font-semibold text-stone-400 mb-3">
+                    <h4 className="text-xs font-semibold text-stone-400 mb-3">
                       Категорії
                     </h4>
                     <FilterRadioGroup
@@ -261,7 +261,7 @@ const AdminComplaintsPage = () => {
                 )}
 
                 {!loading && !err && filteredComplaints.length === 0 && (
-                  <div className="empty-state">
+                  <div className="border border-dashed border-border p-8 text-center">
                     <p className="text-sm font-bold text-stone-50 mb-1">Заявок не знайдено</p>
                     <p className="text-xs text-stone-400">Жодна заявка не відповідає поточним фільтрам.</p>
                   </div>
@@ -277,7 +277,7 @@ const AdminComplaintsPage = () => {
                             <h3 className="text-base font-bold text-stone-50 truncate max-w-xl">
                               {p.title || "Без назви"}
                             </h3>
-                            <p className="micro-label mt-1">{humanLocation(p)}</p>
+                            <p className="label-meta mt-1">{humanLocation(p)}</p>
                           </div>
                           <Badge variant="outline" className={statusBadgeClass(p.status)}>
                             {statusLabel(p.status)}
@@ -290,7 +290,7 @@ const AdminComplaintsPage = () => {
                           </Badge>
                           <Badge
                             variant="outline"
-                            className={`badge-status ${priorityBadgeClass(p.priority)}`}
+                            className={priorityBadgeClass(p.priority)}
                           >
                             Пріоритет: {priorityLabel(p.priority)}
                           </Badge>
@@ -318,7 +318,7 @@ const AdminComplaintsPage = () => {
                         <Separator dashed className="border-stone-700 mt-4" />
                         <div className="flex flex-col md:flex-row md:items-center justify-between pt-4 gap-4">
                           <div className="flex items-center gap-4">
-                            <span className="text-[10px] text-stone-400 font-medium">
+                            <span className="text-xs text-stone-400 font-medium">
                               ID: {p.id}
                             </span>
                             <Button
@@ -327,7 +327,7 @@ const AdminComplaintsPage = () => {
                               onClick={() =>
                                 setOpenCommentsId(openCommentsId === p.id ? null : p.id)
                               }
-                              className="text-blue-400 text-[10px] font-semibold hover:underline inline-flex items-center gap-1 p-0 h-auto"
+                              className="text-blue-400 text-xs font-semibold hover:underline inline-flex items-center gap-1 p-0 h-auto"
                             >
                               <MessageSquare className="w-3 h-3" strokeWidth={2} />
                               Коментарі {openCommentsId === p.id ? "▲" : "▼"}
@@ -340,7 +340,6 @@ const AdminComplaintsPage = () => {
                                 <Button
                                   size="xs"
                                   onClick={() => handleChangeStatus(p.id, "approved")}
-                                  className="text-[10px] font-bold"
                                 >
                                   Схвалити
                                 </Button>
@@ -348,7 +347,6 @@ const AdminComplaintsPage = () => {
                                   size="xs"
                                   variant="destructive"
                                   onClick={() => handleChangeStatus(p.id, "rejected")}
-                                  className="text-[10px] font-bold"
                                 >
                                   Відхилити
                                 </Button>
@@ -358,7 +356,6 @@ const AdminComplaintsPage = () => {
                               <Button
                                 size="xs"
                                 onClick={() => handleChangeStatus(p.id, "resolved")}
-                                className="text-[10px] font-bold"
                               >
                                 Вирішити
                               </Button>
@@ -367,7 +364,6 @@ const AdminComplaintsPage = () => {
                               size="xs"
                               variant="destructive"
                               onClick={() => handleRemove(p.id)}
-                              className="text-[10px] font-bold"
                             >
                               <Trash2 className="w-3 h-3 mr-1" strokeWidth={2} />
                               Видалити
@@ -409,7 +405,7 @@ const AdminComplaintsPage = () => {
                       />
                     </div>
 
-                    <h4 className="text-[10px] font-semibold text-stone-400 mb-3">
+                    <h4 className="text-xs font-semibold text-stone-400 mb-3">
                       Статус тікету
                     </h4>
                     <FilterRadioGroup
@@ -420,7 +416,7 @@ const AdminComplaintsPage = () => {
 
                     <Separator className="my-4 bg-stone-700" />
 
-                    <h4 className="text-[10px] font-semibold text-stone-400 mb-3">
+                    <h4 className="text-xs font-semibold text-stone-400 mb-3">
                       Категорії
                     </h4>
                     <FilterRadioGroup
@@ -437,7 +433,7 @@ const AdminComplaintsPage = () => {
                   Тікети для підтверджених заявок
                 </h3>
                 {filteredTickets.length === 0 ? (
-                  <div className="empty-state">
+                  <div className="border border-dashed border-border p-8 text-center">
                     <p className="text-xs text-stone-400">Жодна заявка не відповідає фільтрам.</p>
                   </div>
                 ) : (
@@ -453,7 +449,7 @@ const AdminComplaintsPage = () => {
                               </h4>
                               <Badge
                                 variant="outline"
-                                className={`badge-status ${priorityBadgeClass(p.priority)}`}
+                                className={priorityBadgeClass(p.priority)}
                               >
                                 {priorityLabel(p.priority)}
                               </Badge>
@@ -462,7 +458,7 @@ const AdminComplaintsPage = () => {
                               <Badge variant="outline" className="text-stone-400 border-stone-700 bg-stone-800">
                                 {CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] || p.category || "Категорія"}
                               </Badge>
-                              <span className="text-[10px] text-stone-400">{humanLocation(p)}</span>
+                              <span className="text-xs text-stone-400">{humanLocation(p)}</span>
                             </div>
                             <p className="text-xs text-stone-400 mb-4 line-clamp-3">{p.description}</p>
 
@@ -472,12 +468,12 @@ const AdminComplaintsPage = () => {
                                   Тікет створено (ID: {ticket.ticket_id})
                                 </p>
                                 {ticket.user && (
-                                  <p className="text-[10px] text-blue-400/80 mt-1">
+                                  <p className="text-xs text-blue-400/80 mt-1">
                                     Виконавець: {ticket.user.first_name} {ticket.user.last_name}
                                   </p>
                                 )}
                                 {ticket.deadline && (
-                                  <p className="text-[10px] text-blue-400/70 mt-1">
+                                  <p className="text-xs text-blue-400/70 mt-1">
                                     Дедлайн: {new Date(ticket.deadline).toLocaleDateString()}
                                   </p>
                                 )}
@@ -493,7 +489,6 @@ const AdminComplaintsPage = () => {
                             ) : (
                               <Button
                                 size="sm"
-                                className="w-full text-[10px] font-bold"
                                 onClick={() => openTicketModal(p)}
                               >
                                 Створити тікет

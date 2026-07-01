@@ -69,7 +69,7 @@ const AdminSidebar = ({ userName = "Адмін", userRole = "Адміністр�
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-bold text-stone-50 truncate">{userName}</span>
-              <span className="text-[10px] text-stone-500 font-semibold">{userRole}</span>
+              <span className="text-xs text-stone-500 font-semibold">{userRole}</span>
             </div>
             <button
               onClick={logoutUser}

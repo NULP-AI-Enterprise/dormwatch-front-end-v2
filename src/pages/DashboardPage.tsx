@@ -215,7 +215,6 @@ const DashboardPage = () => {
                   variant={activeCategory === category.id ? "default" : "outline"}
                   size="xs"
                   onClick={() => setActiveCategory(category.id)}
-                  className="text-[10px] font-semibold"
                 >
                   {category.name}
                 </Button>
@@ -263,7 +262,7 @@ const DashboardPage = () => {
                         <span className="text-base font-bold leading-none">
                           {problem.votesCount || 0}
                         </span>
-                        <span className="text-[8px] font-semibold tracking-tight">
+                        <span className="text-xs font-semibold tracking-tight">
                           {hasVoted ? "Ваш голос" : "Голос"}
                         </span>
                       </Button>
@@ -280,7 +279,7 @@ const DashboardPage = () => {
                             {categories.find((c) => c.id === problem.category)?.name || problem.category}
                           </Badge>
                         </div>
-                        <span className="micro-label">
+                        <span className="label-meta">
                           {problem.building ? `Корпус ${problem.building}` : ""} &middot; {problem.placeName}
                         </span>
                       </div>
@@ -307,7 +306,7 @@ const DashboardPage = () => {
 
                       <Separator dashed className="mt-4" />
                       <div className="flex items-center justify-between pt-3">
-                        <span className="micro-label">
+                        <span className="label-meta">
                           Додано{" "}
                           {new Date(problem.createdAt).toLocaleDateString()}
                         </span>
@@ -345,7 +344,7 @@ const DashboardPage = () => {
             })}
 
             {filteredProblems.length === 0 && (
-              <div className="empty-state">
+              <div className="border border-dashed border-border p-8 text-center">
                 <p className="text-xs text-muted-foreground">
                   Заявок поки немає.
                 </p>
@@ -362,7 +361,7 @@ const DashboardPage = () => {
                 <Button
                   asChild
                   size="sm"
-                  className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/80 text-[10px] font-bold"
+                  className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/80"
                 >
                   <Link to="/admin">Перейти в комендант-центр</Link>
                 </Button>
@@ -370,7 +369,7 @@ const DashboardPage = () => {
                 <Button
                   asChild
                   size="sm"
-                  className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/80 text-[10px] font-bold"
+                  className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/80"
                 >
                   <Link to="/create-report">Створити нову заявку</Link>
                 </Button>

@@ -105,8 +105,8 @@ const HomePage = () => {
               <div className="bg-stone-800 border border-stone-700 p-4 group hover:border-stone-500 transition-colors relative overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-[10px] text-stone-400 font-semibold">Сантехніка</span>
-                  <span className="px-2 py-0.5 bg-yellow-900/30 text-yellow-500 border border-yellow-700/50 text-[10px] font-bold">Очікує</span>
+                  <span className="text-xs text-stone-400 font-semibold">Сантехніка</span>
+                  <span className="px-2 py-0.5 bg-yellow-900/30 text-yellow-500 border border-yellow-700/50 text-xs font-bold">Очікує</span>
                 </div>
                 <div className="w-3/4 h-3 bg-stone-700 mb-2" />
                 <div className="w-full h-2 bg-stone-700 mb-1" />
@@ -115,8 +115,8 @@ const HomePage = () => {
               <div className="bg-stone-800 border border-stone-700 p-4 group hover:border-stone-500 transition-colors relative overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-[10px] text-stone-400 font-semibold">Опалення</span>
-                  <span className="px-2 py-0.5 bg-blue-900/30 text-blue-500 border border-blue-700/50 text-[10px] font-bold">В роботі</span>
+                  <span className="text-xs text-stone-400 font-semibold">Опалення</span>
+                  <span className="px-2 py-0.5 bg-blue-900/30 text-blue-500 border border-blue-700/50 text-xs font-bold">В роботі</span>
                 </div>
                 <div className="w-1/2 h-3 bg-stone-700 mb-2" />
                 <div className="w-full h-2 bg-stone-700 mb-1" />

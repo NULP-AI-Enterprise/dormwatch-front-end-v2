@@ -52,7 +52,7 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionP
       <div className="flex items-center gap-2 mb-3">
         <button
           onClick={loadComments}
-          className="text-[10px] font-semibold text-primary hover:underline"
+          className="text-xs font-semibold text-primary hover:underline"
         >
           {comments.length > 0 ? `Коментарі (${comments.length})` : "Завантажити коментарі"}
         </button>
@@ -72,12 +72,12 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionP
               className="bg-stone-800 p-3 border border-stone-700 relative group/comment"
             >
               <div className="flex justify-between items-baseline mb-1">
-                <span className="text-[11px] font-bold text-stone-50">{c.author}</span>
-                <span className="text-[9px] text-stone-400">
+                <span className="text-xs font-bold text-stone-50">{c.author}</span>
+                <span className="text-xs text-stone-400">
                   {new Date(c.date).toLocaleDateString()}
                 </span>
               </div>
-              <p className="text-[11px] text-stone-400">{c.text}</p>
+              <p className="text-xs text-stone-400">{c.text}</p>
               {(currentUserId === c.author_id || isAdmin) && (
                 <button
                   onClick={() => handleDelete(c.id)}

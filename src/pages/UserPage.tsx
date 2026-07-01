@@ -123,7 +123,7 @@ const UserPage = () => {
                 </div>
                 <div className="space-y-3">
                   {problems.length === 0 ? (
-                    <div className="empty-state">
+                    <div className="border border-dashed border-border p-8 text-center">
                       <p className="text-xs text-stone-400">Немає активних заявок.</p>
                     </div>
                   ) : (
@@ -151,7 +151,7 @@ const UserPage = () => {
           <TabsContent value="reports">
             <div className="space-y-4">
               {problems.length === 0 && (
-                <div className="empty-state">
+                <div className="border border-dashed border-border p-8 text-center">
                   <p className="text-sm font-bold text-stone-50 mb-1">Ще немає звернень</p>
                 </div>
               )}
@@ -159,11 +159,11 @@ const UserPage = () => {
               {problems.map((p) => (
                 <Card key={p.id} className="border-stone-700 shadow-none bg-stone-800">
                   <div className="flex">
-                    <div className="flex-shrink-0 p-5 flex flex-col items-center gap-0.5 min-w-[64px]">
+                    <div className="flex-shrink-0 p-5 flex flex-col items-center gap-0.5 min-w-16">
                       <span className="text-base font-bold text-stone-50 leading-none">
                         {p.votesCount || 0}
                       </span>
-                      <span className="text-[8px] font-semibold text-stone-400">
+                      <span className="text-xs font-semibold text-stone-400">
                         голосів
                       </span>
                     </div>
@@ -178,7 +178,7 @@ const UserPage = () => {
                             {CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] || p.category || "Other"}
                           </Badge>
                         </div>
-                        <span className="micro-label shrink-0">
+                        <span className="label-meta shrink-0">
                           {new Date(p.createdAt).toLocaleDateString()}
                         </span>
                       </div>
@@ -204,7 +204,7 @@ const UserPage = () => {
 
                       <div className="flex items-center justify-between pt-4">
                         <div className="flex items-center gap-4">
-                          <span className="text-[10px] font-semibold text-stone-50">
+                          <span className="text-xs font-semibold text-stone-50">
                             {typeof p.votesCount === "number"
                               ? `${p.votesCount} голосів`
                               : "0 голосів"}
@@ -215,7 +215,7 @@ const UserPage = () => {
                             onClick={() =>
                               setOpenCommentsId(openCommentsId === p.id ? null : p.id)
                             }
-                            className="text-blue-400 text-[10px] font-semibold hover:underline inline-flex items-center gap-1 p-0 h-auto"
+                            className="text-blue-400 text-xs font-semibold hover:underline inline-flex items-center gap-1 p-0 h-auto"
                           >
                             <MessageSquare className="w-3 h-3" strokeWidth={2} />
                             Коментарі {openCommentsId === p.id ? "\u25b2" : "\u25bc"}

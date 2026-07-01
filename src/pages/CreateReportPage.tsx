@@ -108,7 +108,7 @@ const CreateReportPage = () => {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div>
-          <label className="micro-label block mb-4">Що трапилось?</label>
+          <label className="label-field block mb-4">Що трапилось?</label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {categories.map((category) => {
               const isActive = selectedCategory === category.id;
@@ -127,7 +127,7 @@ const CreateReportPage = () => {
                     strokeWidth={2}
                   />
                   <span
-                    className={`text-[10px] font-semibold ${
+                    className={`text-xs font-semibold ${
                       isActive ? "text-primary-foreground" : "text-muted-foreground"
                     }`}
                   >
@@ -142,7 +142,7 @@ const CreateReportPage = () => {
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-5">
             <div>
-              <label className="micro-label block mb-2">Пріоритет</label>
+              <label className="label-field block mb-2">Пріоритет</label>
               <div className="flex gap-2">
                 {[
                   { id: "low", label: "Низький" },
@@ -156,7 +156,7 @@ const CreateReportPage = () => {
                     onClick={() =>
                       setFormData((prev) => ({ ...prev, priority: p.id }))
                     }
-                    className="flex-1 py-2 text-[10px] font-bold transition-colors"
+                    className="flex-1 py-2 text-xs font-bold transition-colors"
                   >
                     {p.label}
                   </Button>
@@ -164,7 +164,7 @@ const CreateReportPage = () => {
               </div>
             </div>
             <div>
-              <label className="micro-label block mb-2">Заголовок</label>
+              <label className="label-field block mb-2">Заголовок</label>
               <Input
                 type="text"
                 name="title"
@@ -176,7 +176,7 @@ const CreateReportPage = () => {
               />
             </div>
             <div>
-              <label className="micro-label block mb-2">
+              <label className="label-field block mb-2">
                 Місце проблеми
               </label>
               <Input
@@ -189,7 +189,7 @@ const CreateReportPage = () => {
               />
             </div>
             <div>
-              <label className="micro-label block mb-2">Опис проблеми</label>
+              <label className="label-field block mb-2">Опис проблеми</label>
               <Textarea
                 name="description"
                 value={formData.description}
@@ -203,7 +203,7 @@ const CreateReportPage = () => {
           </div>
 
           <div>
-            <label className="micro-label block mb-3">Фотодоказ</label>
+            <label className="label-field block mb-3">Фотодоказ</label>
             {photoFile && previewUrl ? (
               <div className="relative w-full aspect-square border-2 border-border overflow-hidden group">
                 <img
@@ -227,7 +227,7 @@ const CreateReportPage = () => {
                   className="w-8 h-8 text-muted-foreground mb-3"
                   strokeWidth={2}
                 />
-                <p className="micro-label">
+                <p className="label-meta">
                   Натисніть, щоб додати фото
                 </p>
                 <input

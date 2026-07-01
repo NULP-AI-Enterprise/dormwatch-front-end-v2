@@ -44,13 +44,13 @@ const TicketCard = ({ id, title, description, category, date, status, location, 
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-stone-400 font-semibold">
+            <span className="text-xs text-stone-400 font-semibold">
               {categoryLabel || category}
             </span>
             <span className="w-1 h-1 bg-stone-600" />
             <span className="text-xs text-stone-500">{date}</span>
           </div>
-          <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold ${statusBadgeClass(status)}`}>
+          <span className={`inline-flex items-center px-2 py-0.5 text-xs font-bold ${statusBadgeClass(status)}`}>
             {statusLabel(status)}
           </span>
         </div>
@@ -71,12 +71,12 @@ const TicketCard = ({ id, title, description, category, date, status, location, 
             <ProgressStepper stage={step} />
           </div>
           <Separator orientation="vertical" dashed className="border-stone-700 h-6" />
-          <span className="ml-3 text-[8px] font-semibold text-stone-600 shrink-0 pl-3">
+          <span className="ml-3 text-xs font-semibold text-stone-600 shrink-0 pl-3">
             #{id}
           </span>
         </div>
         {location && (
-          <p className="text-[10px] text-stone-400 mt-2">{location}</p>
+          <p className="text-xs text-stone-400 mt-2">{location}</p>
         )}
       </div>
     </div>

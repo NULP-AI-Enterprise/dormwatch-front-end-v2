@@ -1,10 +1,10 @@
 export const statusBadgeClass = (status: string) => {
   const s = String(status || "").toLowerCase();
-  if (s === "pending") return "badge-pending";
-  if (s === "rejected") return "badge-urgent";
-  if (s === "resolved") return "badge-resolved";
-  if (s === "approved") return "badge-progress";
-  return "badge-status text-stone-400 bg-stone-800 border-stone-700";
+  if (s === "pending") return "text-yellow-500 bg-yellow-500/10 border-yellow-700/50";
+  if (s === "rejected") return "text-red-500 bg-red-500/10 border-red-700/50";
+  if (s === "resolved") return "text-green-500 bg-green-500/10 border-green-700/50";
+  if (s === "approved") return "text-blue-500 bg-blue-500/10 border-blue-700/50";
+  return "text-stone-400 bg-stone-800 border-stone-700";
 };
 
 export const STATUS_LABELS: Record<string, string> = {
@@ -28,9 +28,9 @@ export const statusLabel = (status: string) => {
 
 export const priorityBadgeClass = (priority: string) => {
   const p = String(priority || "").toLowerCase();
-  if (p === "high" || p === "critical") return "badge-urgent";
-  if (p === "low") return "badge-resolved";
-  return "badge-pending";
+  if (p === "high" || p === "critical") return "text-red-500 bg-red-500/10 border-red-700/50";
+  if (p === "low") return "text-green-500 bg-green-500/10 border-green-700/50";
+  return "text-yellow-500 bg-yellow-500/10 border-yellow-700/50";
 };
 
 export const priorityLabel = (priority: string) => {

@@ -198,12 +198,12 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                   {user ? `${user.first_name} ${user.last_name}` : "Завантаження..."}
                 </p>
                 {user && (
-                  <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold border shrink-0 ${isAdmin ? "bg-yellow-900/30 text-yellow-500 border-yellow-700/50" : "bg-blue-900/30 text-blue-400 border-blue-700/50"}`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 text-xs font-bold border shrink-0 ${isAdmin ? "bg-yellow-900/30 text-yellow-500 border-yellow-700/50" : "bg-blue-900/30 text-blue-400 border-blue-700/50"}`}>
                     {isAdmin ? "Адмін" : "Студент"}
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-muted-foreground truncate">
+              <p className="text-xs text-muted-foreground truncate">
                 {user?.email}
               </p>
             </div>
@@ -216,15 +216,15 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
           >
             <div className="border-b border-border px-5">
               <TabsList variant="line" className="h-9">
-                <TabsTrigger value="profile" className="text-[11px] font-semibold">
+                <TabsTrigger value="profile" className="text-xs font-semibold">
                   <User className="w-3 h-3 mr-1" strokeWidth={2} />
                   Профіль
                 </TabsTrigger>
-                <TabsTrigger value="room" className="text-[11px] font-semibold">
+                <TabsTrigger value="room" className="text-xs font-semibold">
                   <Home className="w-3 h-3 mr-1" strokeWidth={2} />
                   Розміщення
                 </TabsTrigger>
-                <TabsTrigger value="contacts" className="text-[11px] font-semibold">
+                <TabsTrigger value="contacts" className="text-xs font-semibold">
                   <Phone className="w-3 h-3 mr-1" strokeWidth={2} />
                   Контакти
                 </TabsTrigger>
@@ -246,7 +246,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                           />
                         </div>
                         <label className="cursor-pointer">
-                          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-primary hover:underline">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline">
                             <Camera className="w-3 h-3" strokeWidth={2} />
                             Змінити фото
                           </span>
@@ -261,7 +261,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="micro-label block mb-1">Ім'я</label>
+                          <label className="label-field block mb-1">Ім'я</label>
                           <Input
                             name="first_name"
                             value={editForm.first_name}
@@ -272,7 +272,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                           />
                         </div>
                         <div>
-                          <label className="micro-label block mb-1">Прізвище</label>
+                          <label className="label-field block mb-1">Прізвище</label>
                           <Input
                             name="last_name"
                             value={editForm.last_name}
@@ -285,7 +285,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                       </div>
 
                       <div>
-                        <label className="micro-label block mb-1">Email</label>
+                        <label className="label-field block mb-1">Email</label>
                         <Input
                           name="email"
                           value={editForm.email}
@@ -302,13 +302,11 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                         <Button
                           onClick={handleSaveProfile}
                           disabled={saving}
-                          className="flex-1 text-[10px] font-bold"
                         >
                           {saving ? "Зберігаю..." : "Зберегти"}
                         </Button>
                         <Button
                           variant="outline"
-                          className="flex-1 text-[10px] font-bold"
                           onClick={() => {
                             setIsEditing(false);
                             setPhotoFile(null);
@@ -327,7 +325,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                             <User className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
                           </div>
                           <div className="min-w-0">
-                            <p className="micro-label">Ім'я</p>
+                            <p className="label-meta">Ім'я</p>
                             <p className="text-xs font-semibold text-foreground truncate">
                               {user?.first_name || "Не вказано"}
                             </p>
@@ -338,7 +336,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                             <User className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
                           </div>
                           <div className="min-w-0">
-                            <p className="micro-label">Прізвище</p>
+                            <p className="label-meta">Прізвище</p>
                             <p className="text-xs font-semibold text-foreground truncate">
                               {user?.last_name || "Не вказано"}
                             </p>
@@ -349,7 +347,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                             <Building2 className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
                           </div>
                           <div className="min-w-0">
-                            <p className="micro-label">Гуртожиток</p>
+                            <p className="label-meta">Гуртожиток</p>
                             <p className="text-xs font-semibold text-foreground truncate">
                               {buildingInfo}
                             </p>
@@ -360,7 +358,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                             <Home className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
                           </div>
                           <div className="min-w-0">
-                            <p className="micro-label">Кімната</p>
+                            <p className="label-meta">Кімната</p>
                             <p className="text-xs font-semibold text-foreground truncate">
                               {roomInfo}
                             </p>
@@ -374,7 +372,6 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 text-[10px] font-bold"
                           onClick={() => setIsEditing(true)}
                         >
                           Редагувати профіль
@@ -386,7 +383,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="w-full text-[10px] font-bold text-red-400 hover:text-red-300 hover:bg-red-900/10"
+                        className="w-full text-red-400 hover:text-red-300 hover:bg-red-900/10"
                         onClick={handleLogout}
                       >
                         <LogOut className="w-3 h-3 mr-1.5" strokeWidth={2} />
@@ -399,7 +396,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                 <TabsContent value="room" className="mt-0 focus-visible:ring-0 focus-visible:outline-none">
                   <div className="space-y-4">
                     <div className="p-3 bg-muted border border-border">
-                      <p className="micro-label mb-1.5">Поточне розміщення</p>
+                      <p className="label-section mb-1.5">Поточне розміщення</p>
                       <div className="flex items-center gap-2">
                         <Building2 className="w-4 h-4 text-primary" strokeWidth={2} />
                         <p className="text-sm font-bold text-foreground">{buildingInfo}</p>
@@ -417,7 +414,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                       </p>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="micro-label block mb-1">Корпус</label>
+                          <label className="label-field block mb-1">Корпус</label>
                           <Select
                             value={editForm.building}
                             onValueChange={(value) =>
@@ -437,7 +434,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                           </Select>
                         </div>
                         <div>
-                          <label className="micro-label block mb-1">Поверх</label>
+                          <label className="label-field block mb-1">Поверх</label>
                           <Input
                             name="floor"
                             type="number"
@@ -449,7 +446,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="micro-label block mb-1">Кімната</label>
+                          <label className="label-field block mb-1">Кімната</label>
                           <Input
                             name="room"
                             value={editForm.room}
@@ -464,7 +461,6 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                       <Button
                         onClick={handleSaveProfile}
                         disabled={saving}
-                        className="w-full mt-4 text-[10px] font-bold"
                       >
                         {saving ? "Зберігаю..." : "Зберегти розміщення"}
                       </Button>
@@ -473,7 +469,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                 </TabsContent>
 
                 <TabsContent value="contacts" className="mt-0 focus-visible:ring-0 focus-visible:outline-none">
-                  <h4 className="text-[10px] font-bold text-stone-400 mb-6">
+                  <h4 className="text-xs font-bold text-stone-400 mb-6">
                     Екстрені контакти
                   </h4>
                   <div className="space-y-4">
@@ -482,7 +478,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                         <Briefcase className="w-4 h-4 text-primary" strokeWidth={2} />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-muted-foreground">
+                        <p className="text-xs font-bold text-muted-foreground">
                           Комендант
                         </p>
                         <p className="text-sm font-bold text-foreground mt-0.5">
@@ -495,7 +491,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                         <Phone className="w-4 h-4 text-primary" strokeWidth={2} />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-muted-foreground">
+                        <p className="text-xs font-bold text-muted-foreground">
                           Черговий майстер
                         </p>
                         <p className="text-sm font-bold text-foreground mt-0.5">
@@ -505,7 +501,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                     </div>
                     <div className="p-3 border border-dashed border-border text-center">
                       <ShieldAlert className="w-5 h-5 text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
-                      <p className="text-[10px] text-muted-foreground font-semibold">
+                      <p className="text-xs text-muted-foreground font-semibold">
                         Екстрені ситуації — телефонуйте 101 або 112
                       </p>
                     </div>

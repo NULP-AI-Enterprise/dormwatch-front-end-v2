@@ -177,7 +177,7 @@ const AdminPage = () => {
                             {c.description}
                           </p>
                         </TableCell>
-                        <TableCell className="px-6 py-4 text-[10px] text-stone-400 font-semibold">
+                        <TableCell className="px-6 py-4 text-xs text-stone-400 font-semibold">
                           {CATEGORY_LABELS[c.category as keyof typeof CATEGORY_LABELS] || c.category}
                         </TableCell>
                         <TableCell className="px-6 py-4 text-sm text-stone-300">

@@ -23,7 +23,7 @@ const StudentLayout = ({ children }: { children: ReactNode }) => {
 
           <div className="flex items-center gap-4">
             {admin && (
-              <Link to="/admin" className="text-[10px] font-bold text-stone-400 hover:text-blue-400 transition-colors hidden sm:block mr-2">
+              <Link to="/admin" className="text-xs font-bold text-stone-400 hover:text-blue-400 transition-colors hidden sm:block mr-2">
                 Панель адміністратора
               </Link>
             )}

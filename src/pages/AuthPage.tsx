@@ -98,7 +98,7 @@ function SelectField({ children, ...props }: React.ComponentProps<typeof SelectT
 function ErrorBanner({ message }: { message: string }) {
   return (
     <div className="mb-5 border border-destructive/40 bg-destructive/10 px-3 py-2.5">
-      <p className="text-[11px] leading-relaxed text-destructive font-medium">{message}</p>
+      <p className="text-xs leading-relaxed text-destructive font-medium">{message}</p>
     </div>
   );
 }

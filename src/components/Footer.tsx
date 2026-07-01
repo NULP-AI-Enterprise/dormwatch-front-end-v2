@@ -21,10 +21,10 @@ const Footer = () => {
         </div>
 
         <div className="flex flex-col items-center md:items-end gap-1">
-          <a href="mailto:support@dormwatch.edu.ua" className="text-blue-400 hover:text-blue-300 font-bold text-sm text-[10px] transition-colors">
+          <a href="mailto:support@dormwatch.edu.ua" className="text-blue-400 hover:text-blue-300 font-bold text-sm text-xs transition-colors">
             support@dormwatch.edu.ua
           </a>
-          <span className="text-stone-600 text-[10px]">
+          <span className="text-stone-600 text-xs">
             &copy; 2025 DormWatch Systems. Всі права захищено.
           </span>
         </div>
