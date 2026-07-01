@@ -77,7 +77,7 @@ const ComplaintSidePanel = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground font-medium">
+            <span className="text-xs text-muted-foreground font-semibold">
               {categoryLabel}
             </span>
             <span className="w-1 h-1 bg-border" />
@@ -88,7 +88,7 @@ const ComplaintSidePanel = ({
                 Пріоритет: {priorityLabel(complaint.priority)}
             </Badge>
             {complaint.createdAt && (
-              <span className="text-xs text-muted-foreground font-medium">
+              <span className="text-xs text-muted-foreground font-semibold">
                 {new Date(complaint.createdAt).toLocaleDateString()}
               </span>
             )}

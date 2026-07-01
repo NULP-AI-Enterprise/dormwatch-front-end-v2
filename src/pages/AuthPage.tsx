@@ -57,7 +57,7 @@ function AuthLayout({ children, heading, subtitle }: { children: ReactNode; head
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
       <div className="w-full max-w-lg">
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center gap-2 text-primary font-bold text-2xl tracking-tight mb-2">
+          <div className="flex items-center gap-2 text-primary font-bold text-2xl mb-2">
             <HugeiconsIcon icon={Building03Icon} strokeWidth={2} className="size-8" />
             <span>DormWatch</span>
           </div>
@@ -98,7 +98,7 @@ function SelectField({ children, ...props }: React.ComponentProps<typeof SelectT
 function ErrorBanner({ message }: { message: string }) {
   return (
     <div className="mb-5 border border-destructive/40 bg-destructive/10 px-3 py-2.5">
-      <p className="text-xs leading-relaxed text-destructive font-medium">{message}</p>
+      <p className="text-xs leading-relaxed text-destructive font-semibold">{message}</p>
     </div>
   );
 }

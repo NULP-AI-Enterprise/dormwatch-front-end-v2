@@ -118,7 +118,7 @@ const CreateReportPage = () => {
                   type="button"
                   variant={isActive ? "default" : "outline"}
                   onClick={() => setSelectedCategory(category.id)}
-                  className="p-4 h-auto border-2 flex flex-col items-center gap-2 transition-all"
+                  className="p-4 h-auto flex flex-col items-center gap-2 transition-all"
                 >
                   <category.Icon
                     className={`w-6 h-6 ${
@@ -156,7 +156,7 @@ const CreateReportPage = () => {
                     onClick={() =>
                       setFormData((prev) => ({ ...prev, priority: p.id }))
                     }
-                    className="flex-1 py-2 text-xs font-bold transition-colors"
+                    className="flex-1 py-2 text-xs transition-colors"
                   >
                     {p.label}
                   </Button>
@@ -245,7 +245,7 @@ const CreateReportPage = () => {
           type="submit"
           size="lg"
           disabled={submitting}
-          className="w-full font-bold text-sm"
+          className="w-full"
         >
           {submitting ? "Публікую..." : "Опублікувати звернення"}
         </Button>

@@ -203,10 +203,10 @@ const AdminComplaintsPage = () => {
       <Tabs value={tab} onValueChange={(v) => setTab(v as "requests" | "tickets")} className="flex-1 flex flex-col">
           <div className="flex items-center">
             <TabsList variant="line" className="h-auto bg-transparent">
-              <TabsTrigger value="requests" className="px-5 py-3 text-xs font-bold">
+              <TabsTrigger value="requests" className="px-5 py-3 text-xs font-semibold">
                 Заявки
               </TabsTrigger>
-              <TabsTrigger value="tickets" className="px-5 py-3 text-xs font-bold">
+              <TabsTrigger value="tickets" className="px-5 py-3 text-xs font-semibold">
                 Тікети
               </TabsTrigger>
             </TabsList>
@@ -277,7 +277,7 @@ const AdminComplaintsPage = () => {
                       <div className="p-5">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
                           <div>
-                            <h3 className="text-base font-bold text-foreground truncate max-w-xl">
+                            <h3 className="text-sm font-semibold text-foreground truncate max-w-xl">
                               {p.title || "Без назви"}
                             </h3>
                             <p className="text-xs font-normal text-muted-foreground mt-1">
@@ -297,7 +297,7 @@ const AdminComplaintsPage = () => {
                             Пріоритет: {priorityLabel(p.priority)}
                           </Badge>
                           {p.createdAt && (
-                            <span className="text-xs text-muted-foreground font-medium">
+                            <span className="text-xs text-muted-foreground font-semibold">
                               {new Date(p.createdAt).toLocaleDateString()}
                             </span>
                           )}
@@ -319,7 +319,7 @@ const AdminComplaintsPage = () => {
 
                         <div className="flex flex-col md:flex-row md:items-center justify-between pt-4 gap-4">
                           <div className="flex items-center gap-4">
-                            <span className="text-xs text-muted-foreground font-medium">
+                            <span className="text-xs text-muted-foreground font-semibold">
                               ID: {p.id}
                             </span>
                             <Button

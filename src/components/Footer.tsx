@@ -9,7 +9,7 @@ const Footer = () => {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Building2 className="w-5 h-5 text-primary" />
-            <span className="text-lg font-bold tracking-tight">DormWatch</span>
+            <span className="text-lg font-bold">DormWatch</span>
           </div>
           <p className="text-muted-foreground text-xs">Система прямої комунікації між студентами та адміністрацією.</p>
         </div>

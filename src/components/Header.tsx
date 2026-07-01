@@ -41,7 +41,7 @@ const Header = () => {
       <nav className="bg-card sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2 text-primary font-bold text-xl tracking-tight">
+            <Link to="/" className="flex items-center gap-2 text-primary font-bold text-xl">
               <Building2 className="w-6 h-6" strokeWidth={1.5} />
               <span>DormWatch</span>
             </Link>

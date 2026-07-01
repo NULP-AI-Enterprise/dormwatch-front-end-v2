@@ -76,10 +76,10 @@ const UserPage = () => {
     <div className="max-w-5xl mx-auto px-4 py-10">
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList variant="line" className="mb-8">
-            <TabsTrigger value="dashboard" className="text-xs font-bold">
+            <TabsTrigger value="dashboard" className="text-xs font-semibold">
               Панель
             </TabsTrigger>
-            <TabsTrigger value="reports" className="text-xs font-bold">
+            <TabsTrigger value="reports" className="text-xs font-semibold">
               Мої заявки
             </TabsTrigger>
           </TabsList>

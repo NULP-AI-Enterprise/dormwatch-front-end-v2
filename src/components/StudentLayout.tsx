@@ -19,7 +19,7 @@ const StudentLayout = ({ children }: { children: ReactNode }) => {
       <nav className="bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2 text-primary font-bold text-xl tracking-tight cursor-pointer hover:text-primary/80 transition-colors">
+            <Link to="/" className="flex items-center gap-2 text-primary font-bold text-xl cursor-pointer hover:text-primary/80 transition-colors">
               <Building2 className="w-6 h-6" />
               <span>Dormwatch</span>
             </Link>

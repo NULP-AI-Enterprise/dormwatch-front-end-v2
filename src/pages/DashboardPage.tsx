@@ -281,7 +281,7 @@ const DashboardPage = () => {
                         <span className="text-base font-bold leading-none">
                           {problem.votesCount || 0}
                         </span>
-                        <span className="text-xs font-semibold tracking-tight">
+                        <span className="text-xs font-semibold">
                           {hasVoted ? "Ваш голос" : "Голос"}
                         </span>
                       </Button>
