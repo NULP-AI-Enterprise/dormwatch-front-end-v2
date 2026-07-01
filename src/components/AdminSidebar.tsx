@@ -44,7 +44,7 @@ const AdminSidebar = ({ userName = "Адмін", userRole = "Адміністр�
                   item.to === "#" && "pointer-events-none",
                   isActive && item.to !== "#"
                     ? "border-blue-500 bg-primary/5 text-foreground"
-                    : "border-transparent text-muted-foreground hover:border-stone-500 hover:text-foreground"
+                    : "border-transparent text-muted-foreground hover:border-border/80 hover:text-foreground"
                 )
               }
             >

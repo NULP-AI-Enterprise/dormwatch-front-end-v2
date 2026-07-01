@@ -296,7 +296,7 @@ const DashboardPage = () => {
                           </Badge>
                         </div>
                         <span className="text-xs font-normal text-muted-foreground">
-                          {categories.find((c) => c.id === problem.category)?.name || problem.category} &middot; {problem.building ? `Корпус ${problem.building}` : ""} &middot; {problem.placeName}
+                          {categories.find((c) => c.id === problem.category)?.name || problem.category}<span className="w-1 h-1 bg-border inline-block mx-1" />{problem.building ? `Корпус ${problem.building}` : ""}<span className="w-1 h-1 bg-border inline-block mx-1" />{problem.placeName}
                         </span>
                       </div>
 

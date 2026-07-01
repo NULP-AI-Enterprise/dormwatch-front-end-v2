@@ -81,7 +81,7 @@ const Header = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button asChild variant="default" size="sm" className="border border-blue-700 gap-2">
+            <Button asChild variant="default" size="sm" className="gap-2">
               <Link to="/create-report">+ Повідомити</Link>
             </Button>
 

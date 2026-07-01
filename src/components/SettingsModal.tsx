@@ -9,6 +9,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -202,9 +203,9 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                   {user ? `${user.first_name} ${user.last_name}` : "Завантаження..."}
                 </p>
                 {user && (
-                  <span className={`inline-flex items-center px-2 py-0.5 text-xs font-bold border shrink-0 ${isAdmin ? "bg-yellow-900/30 text-yellow-500 border-yellow-700/50" : "bg-blue-900/30 text-blue-400 border-blue-700/50"}`}>
+                  <Badge variant="outline" className={`${isAdmin ? "text-yellow-500 bg-yellow-500/10 border-yellow-700/50" : "text-blue-500 bg-blue-500/10 border-blue-700/50"}`}>
                     {isAdmin ? "Адмін" : "Студент"}
-                  </span>
+                  </Badge>
                 )}
               </div>
               <p className="text-xs text-muted-foreground truncate">
@@ -404,7 +405,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                       <div className="flex items-center gap-2">
                         <Building2 className="w-4 h-4 text-primary" strokeWidth={1.5} />
                         <p className="text-sm font-bold text-foreground">{buildingInfo}</p>
-                        <span className="text-muted-foreground mx-1">&middot;</span>
+                        <span className="w-1 h-1 bg-border inline-block mx-1.5" />
                         <Home className="w-4 h-4 text-primary" strokeWidth={2} />
                         <p className="text-sm font-bold text-foreground">{roomInfo}</p>
                       </div>

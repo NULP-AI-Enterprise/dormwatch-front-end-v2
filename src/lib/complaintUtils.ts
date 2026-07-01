@@ -38,12 +38,6 @@ export const priorityLabel = (priority: string) => {
   return PRIORITY_LABELS[p] || priority;
 };
 
-export const humanLocation = (p: any) => {
-  const b = p.building ? `Корпус ${p.building}` : "Корпус ?";
-  const place = p.placeName ? ` \u2022 ${p.placeName}` : " \u2022 ?";
-  return `${b}${place}`;
-};
-
 export const isAdminUser = (user: any) =>
   !!(
     user?.role &&

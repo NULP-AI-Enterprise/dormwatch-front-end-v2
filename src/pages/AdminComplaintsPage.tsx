@@ -22,7 +22,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 
 import { Separator } from "../components/ui/separator";
-import { statusBadgeClass, statusLabel, humanLocation, priorityBadgeClass, priorityLabel } from "../lib/complaintUtils";
+import { statusBadgeClass, statusLabel, priorityBadgeClass, priorityLabel } from "../lib/complaintUtils";
 import {
   Search,
   Trash2,
@@ -285,7 +285,7 @@ const AdminComplaintsPage = () => {
                               {p.title || "Без назви"}
                             </h3>
                             <p className="text-xs font-normal text-muted-foreground mt-1">
-                              {CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] || p.category || "Категорія"} &middot; {humanLocation(p)}
+                              {CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] || p.category || "Категорія"}<span className="w-1 h-1 bg-border inline-block mx-1" />{p.building ? `Корпус ${p.building}` : "Корпус ?"}<span className="w-1 h-1 bg-border inline-block mx-1" />{p.placeName || "?"}
                             </p>
                           </div>
                           <Badge variant="outline" className={statusBadgeClass(p.status)}>
@@ -454,7 +454,7 @@ const AdminComplaintsPage = () => {
                               <Badge variant="outline" className="text-muted-foreground border-border bg-card">
                                 {CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] || p.category || "Категорія"}
                               </Badge>
-                              <span className="text-xs text-muted-foreground">{humanLocation(p)}</span>
+                              <span className="text-xs text-muted-foreground">{p.building ? `Корпус ${p.building}` : "Корпус ?"}<span className="w-1 h-1 bg-border inline-block mx-1" />{p.placeName || "?"}</span>
                             </div>
                             <p className="text-xs text-muted-foreground mb-4 line-clamp-3">{p.description}</p>
 

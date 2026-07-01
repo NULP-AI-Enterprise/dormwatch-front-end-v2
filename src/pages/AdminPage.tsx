@@ -63,14 +63,14 @@ const AdminPage = () => {
             <Button
               variant="outline"
               size="default"
-              className="hidden md:inline-flex items-center gap-2 text-base font-semibold border-border text-muted-foreground hover:bg-muted"
+              className="gap-2"
             >
               <Download className="w-4 h-4" strokeWidth={2} />
               Експорт даних
             </Button>
             <Button
               size="default"
-              className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-base font-semibold"
+              className="gap-2"
               onClick={() => {
                 setSelectedComplaint({
                   id: "new",

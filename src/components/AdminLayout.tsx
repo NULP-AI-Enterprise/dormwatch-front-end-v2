@@ -41,7 +41,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all border-l-4 ${
                   isActive
-                    ? "border-blue-500 bg-card text-foreground"
+                    ? "border-blue-500 bg-primary/5 text-foreground"
                     : "border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 }`}
               >

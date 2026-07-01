@@ -7,7 +7,7 @@ import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import { resolveImageUrl } from "../services/imageUtils";
 import { CATEGORY_LABELS, updateComplaintStatus, deleteProblem } from "../services/problemsApi";
-import { statusBadgeClass, statusLabel, humanLocation, priorityBadgeClass, priorityLabel } from "../lib/complaintUtils";
+import { statusBadgeClass, statusLabel, priorityBadgeClass, priorityLabel } from "../lib/complaintUtils";
 import { Trash2, Ticket } from "lucide-react";
 import type { Complaint } from "../lib/types";
 
@@ -73,7 +73,7 @@ const ComplaintSidePanel = ({
               </span>
             </div>
             <h3 className="text-base font-bold text-foreground mb-1">{complaint.title || "Без назви"}</h3>
-            <p className="text-xs font-normal text-muted-foreground">{humanLocation(complaint)}</p>
+            <p className="text-xs font-normal text-muted-foreground">{complaint.building ? `Корпус ${complaint.building}` : "Корпус ?"}<span className="w-1 h-1 bg-border inline-block mx-1.5" />{complaint.placeName || "?"}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
