@@ -47,6 +47,7 @@ import {
   CheckmarkCircleIcon,
   CancelCircleIcon,
   AddIcon,
+  MoreHorizontalIcon,
 } from "@hugeicons/core-free-icons";
 import type { Complaint, Ticket, Employee } from "../lib/types";
 
@@ -309,7 +310,15 @@ const AdminComplaintsPage = () => {
                 {!loading &&
                   !err &&
                   filteredComplaints.map((p) => (
-                    <Card key={p.id} className="border-border shadow-none bg-card group">
+                    <Card
+                      key={p.id}
+                      className="border-border shadow-none bg-card group hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        if ((e.target as HTMLElement).closest('button, [role="dialog"], a')) return;
+                        setSelectedComplaint(p);
+                        setSheetOpen(true);
+                      }}
+                    >
                       <div className="p-6">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
                           <div>
@@ -320,9 +329,24 @@ const AdminComplaintsPage = () => {
                               {CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] || p.category || "Категорія"}<span className="w-1 h-1 bg-border inline-block mx-1" />{p.building ? `Корпус ${p.building}` : "Корпус ?"}<span className="w-1 h-1 bg-border inline-block mx-1" />{p.placeName || "?"}
                             </p>
                           </div>
-                          <Badge variant="outline" className={statusBadgeClass(p.status)}>
-                            {statusLabel(p.status)}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className={statusBadgeClass(p.status)}>
+                              {statusLabel(p.status)}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedComplaint(p);
+                                setSheetOpen(true);
+                              }}
+                              className="text-muted-foreground"
+                            >
+                              <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4 mr-1.5" />
+                              Деталі
+                            </Button>
+                          </div>
                         </div>
 
                         <div className="flex flex-wrap gap-2 mb-3">
@@ -358,18 +382,6 @@ const AdminComplaintsPage = () => {
                             <span className="text-xs text-muted-foreground font-semibold">
                               ID: {p.id}
                             </span>
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => {
-                                setSelectedComplaint(p);
-                                setSheetOpen(true);
-                              }}
-                              className="text-primary text-xs font-semibold hover:underline inline-flex items-center gap-1 p-0 h-auto"
-                            >
-                              <HugeiconsIcon icon={Message01Icon} className="size-3" strokeWidth={2} />
-                              Коментарі
-                            </Button>
                           </div>
 
                           <div className="flex flex-wrap gap-2">
@@ -378,7 +390,7 @@ const AdminComplaintsPage = () => {
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button
-                                      size="xs"
+                                      size="sm"
                                     >
                                       <HugeiconsIcon icon={CheckmarkCircleIcon} className="size-3 mr-1" strokeWidth={2} />
                                       Схвалити
@@ -400,7 +412,7 @@ const AdminComplaintsPage = () => {
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button
-                                      size="xs"
+                                      size="sm"
                                       variant="destructive"
                                     >
                                       <HugeiconsIcon icon={CancelCircleIcon} className="size-3 mr-1" strokeWidth={2} />
@@ -426,7 +438,7 @@ const AdminComplaintsPage = () => {
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button
-                                    size="xs"
+                                    size="sm"
                                   >
                                     <HugeiconsIcon icon={CheckmarkCircleIcon} className="size-3 mr-1" strokeWidth={2} />
                                     Вирішити
@@ -449,7 +461,7 @@ const AdminComplaintsPage = () => {
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button
-                                  size="xs"
+                                  size="sm"
                                   variant="destructive"
                                 >
                                   <HugeiconsIcon icon={Delete01Icon} className="size-3 mr-1" strokeWidth={2} />

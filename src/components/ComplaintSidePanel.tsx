@@ -81,7 +81,7 @@ const ComplaintSidePanel = ({
                 {statusLabel(complaint.status)}
               </Badge>
               <span className="text-xs font-semibold text-muted-foreground">
-                {complaint.id !== "new" && `#${complaint.id}`}
+                {String(complaint.id) !== "new" && `#${complaint.id}`}
               </span>
             </div>
             <h3 className="text-base font-bold text-foreground mb-1">{complaint.title || "Без назви"}</h3>
