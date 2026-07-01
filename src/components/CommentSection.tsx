@@ -51,12 +51,9 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionP
   return (
     <div className="bg-muted/30">
       <div className="flex items-center gap-2 mb-3">
-        <button
-          onClick={loadComments}
-          className="text-xs font-semibold text-primary hover:underline"
-        >
+        <Button variant="link" size="xs" onClick={loadComments} className="p-0 h-auto text-xs font-semibold text-primary hover:underline">
           {comments.length > 0 ? `Коментарі (${comments.length})` : "Завантажити коментарі"}
-        </button>
+        </Button>
       </div>
 
       {loading && (
@@ -80,12 +77,9 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionP
               </div>
               <p className="text-xs text-muted-foreground">{c.text}</p>
               {(currentUserId === c.author_id || isAdmin) && (
-                <button
-                  onClick={() => handleDelete(c.id)}
-                  className="absolute top-1 right-1 text-red-400 opacity-0 group-hover/comment:opacity-100 transition-opacity"
-                >
+                <Button variant="ghost" size="icon-xs" onClick={() => handleDelete(c.id)} className="absolute top-1 right-1 text-red-400 opacity-0 group-hover/comment:opacity-100 transition-opacity">
                   <X className="w-3 h-3" strokeWidth={2} />
-                </button>
+                </Button>
               )}
             </div>
           ))}

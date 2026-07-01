@@ -27,7 +27,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
         <div className="h-20 px-6 flex items-center border-b border-border">
           <Link to="/admin" className="flex items-center gap-3 text-primary font-bold text-xl hover:text-primary/80 transition-colors">
             <Building2 className="w-6 h-6" />
-            <span>Dormwatch</span>
+            <span>DormWatch</span>
           </Link>
         </div>
 

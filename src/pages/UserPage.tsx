@@ -88,7 +88,7 @@ const UserPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-1 space-y-6">
                 <div>
-                  <h1 className="text-3xl font-bold text-foreground tracking-tight">Hello, {firstName}!</h1>
+                  <h1 className="text-3xl font-bold text-foreground tracking-tight">Вітаємо, {firstName}!</h1>
                   <p className="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
                     <MapPin className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                     {building} &bull; Room {room}
