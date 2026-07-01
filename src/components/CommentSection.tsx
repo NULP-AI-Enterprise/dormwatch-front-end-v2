@@ -49,7 +49,7 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionP
   };
 
   return (
-    <div>
+    <div className="bg-muted/30">
       <div className="flex items-center gap-2 mb-3">
         <button
           onClick={loadComments}

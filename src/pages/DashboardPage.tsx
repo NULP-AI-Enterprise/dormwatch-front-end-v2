@@ -345,7 +345,7 @@ const DashboardPage = () => {
                   {openCommentsId === problem.id && (
                     <>
                       <Separator dashed />
-                      <div className="bg-muted/30 p-4">
+                      <div className="p-4">
                       <CommentSection
                         complaintId={problem.id}
                         currentUserId={currentUser?.user}
