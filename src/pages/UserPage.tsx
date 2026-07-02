@@ -255,6 +255,7 @@ const UserPage = () => {
                         complaintId={p.id}
                         currentUserId={currentUser?.user}
                         isAdmin={isAdminUser(currentUser)}
+                        complaintAuthorId={p.user_id}
                       />
                     </div>
                   )}

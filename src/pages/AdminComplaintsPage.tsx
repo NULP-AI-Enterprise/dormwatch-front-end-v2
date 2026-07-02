@@ -31,6 +31,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogClose,
+} from "../components/ui/dialog";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 
@@ -107,6 +113,7 @@ const AdminComplaintsPage = () => {
   const [selectedStatus, setSelectedStatus] = useState(location.state?.selectedStatus || "pending");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const [ticketStatus, setTicketStatus] = useState("all");
   const [ticketCategory, setTicketCategory] = useState("all");
@@ -133,6 +140,7 @@ const AdminComplaintsPage = () => {
     try {
       const data = await fetchAllComplaints();
       setComplaints(data);
+      setSelectedComplaint(prev => prev ? data.find(c => c.id === prev.id) || prev : prev);
     } catch (err) {
       console.warn('Failed to load complaints', err);
       setErr("Не вдалося завантажити скарги.");
@@ -219,6 +227,22 @@ const AdminComplaintsPage = () => {
 
   return (
     <>
+      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
+        <DialogContent className="max-w-4xl bg-background/95 border-border p-0" showCloseButton={false}>
+          <DialogTitle className="sr-only">Image preview</DialogTitle>
+          {previewImage && (
+            <img
+              src={previewImage}
+              className="w-full h-auto max-h-[90vh] object-contain"
+              alt="Full size"
+            />
+          )}
+          <DialogClose className="absolute top-4 right-4 text-foreground hover:text-stone-300">
+            <HugeiconsIcon icon={Cancel01Icon} className="size-6" strokeWidth={2} />
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex-1 flex flex-col min-h-screen">
       <Tabs value={tab} onValueChange={(v) => setTab(v as "requests" | "tickets")} className="flex-1 flex flex-col">
           <div className="flex items-center">
@@ -367,11 +391,17 @@ const AdminComplaintsPage = () => {
                         </p>
 
                         {p.photoUrl && (
-                          <div className="w-full h-44 overflow-hidden border border-border mb-4">
+                          <div 
+                            className="w-full h-44 overflow-hidden border border-border mb-4 cursor-zoom-in"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPreviewImage(resolveImageUrl(p.photoUrl as string));
+                            }}
+                          >
                             <img
                               src={resolveImageUrl(p.thumbnail || p.photoUrl)}
                               alt=""
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                             />
                           </div>
                         )}
