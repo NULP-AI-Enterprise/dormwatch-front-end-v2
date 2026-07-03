@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Forward01Icon, Cancel01Icon, Refresh01Icon, Message01Icon } from "@hugeicons/core-free-icons";
+import { Forward01Icon, Cancel01Icon, Message01Icon } from "@hugeicons/core-free-icons";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import LoadingSpinner from "./LoadingSpinner";
 import {
   fetchComments,
@@ -15,9 +16,10 @@ interface CommentSectionProps {
   complaintId: number;
   currentUserId?: number | string;
   isAdmin?: boolean;
+  complaintAuthorId?: number | null;
 }
 
-const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionProps) => {
+const CommentSection = ({ complaintId, currentUserId, isAdmin, complaintAuthorId }: CommentSectionProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,6 +30,10 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionP
     setComments(data);
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadComments();
+  }, [complaintId]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -52,9 +58,9 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionP
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Button variant="link" size="xs" onClick={loadComments} className="p-0 h-auto text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1">
-          {comments.length > 0 ? <><HugeiconsIcon icon={Message01Icon} className="size-3" strokeWidth={2} /> Коментарі ({comments.length})</> : <><HugeiconsIcon icon={Refresh01Icon} className="size-3" strokeWidth={2} /> Завантажити коментарі</>}
-        </Button>
+        <span className="text-xs font-semibold text-muted-foreground inline-flex items-center gap-1">
+          <HugeiconsIcon icon={Message01Icon} className="size-3" strokeWidth={2} /> Коментарі ({comments.length})
+        </span>
       </div>
 
       {loading && (
@@ -70,8 +76,17 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin }: CommentSectionP
               key={c.id}
               className="bg-card p-3 border border-border relative group/comment"
             >
-              <div className="flex justify-between items-baseline mb-1">
-                <span className="text-xs font-bold text-foreground">{c.author}</span>
+              <div className="flex justify-between items-baseline mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-foreground">{c.author}</span>
+                  {c.author_id === currentUserId && isAdmin ? (
+                    <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 bg-blue-500 text-white hover:bg-blue-600">Адміністратор</Badge>
+                  ) : c.author_id === complaintAuthorId ? (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-green-600 border-green-600">Автор скарги</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-stone-500 border-stone-300">Студент</Badge>
+                  )}
+                </div>
                 <span className="text-xs text-muted-foreground">
                   {new Date(c.date).toLocaleDateString()}
                 </span>
