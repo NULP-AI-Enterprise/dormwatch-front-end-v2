@@ -374,6 +374,17 @@ export async function updateComplaintStatus(id, newStatus) {
   return { id, status: newStatus };
 }
 
+export async function updateComplaintPriority(id, newPriority) {
+  const formData = new FormData();
+  formData.append("priority", newPriority);
+
+  await fetchJson(`/admin/complaints/${id}/status/`, {
+    method: "PATCH",
+    body: formData,
+  });
+  return { id, priority: newPriority };
+}
+
 export async function approveComplaint(id) {
   return updateComplaintStatus(id, "approved");
 }

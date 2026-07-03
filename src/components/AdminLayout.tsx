@@ -10,7 +10,7 @@ import { SettingsModal } from "./SettingsModal";
 const AdminLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const { user, refreshUser } = useUser();
+  const { user } = useUser();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const initials = getUserInitials(user, "AD");
@@ -19,7 +19,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   const navItems = [
     { name: "Загальний огляд", path: "/admin", icon: <HugeiconsIcon icon={DashboardSquare01Icon} className="size-5" /> },
     { name: "Мешканці", path: "#", icon: <HugeiconsIcon icon={GroupIcon} className="size-5" /> },
-    { name: "Всі заявки", path: "/admin/complaints", icon: <HugeiconsIcon icon={File01Icon} className="size-5" /> },
+    { name: "Всі скарги", path: "/admin/complaints", icon: <HugeiconsIcon icon={File01Icon} className="size-5" /> },
     { name: "Оголошення", path: "#", icon: <HugeiconsIcon icon={Megaphone01Icon} className="size-5" /> },
   ];
 
@@ -35,7 +35,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
 
         <nav className="flex-1 py-6 px-4 space-y-2">
           {navItems.map((item) => {
-            const isActive = item.path !== "#" && (currentPath === item.path || currentPath.startsWith(item.path + "/"));
+          const isActive = item.path !== "#" && (currentPath === item.path || (item.path !== '/admin' && currentPath.startsWith(item.path + "/")));
             return (
               <Link
                 key={item.name}

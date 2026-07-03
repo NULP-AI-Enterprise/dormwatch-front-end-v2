@@ -351,6 +351,7 @@ const DashboardPage = () => {
                         complaintId={problem.id}
                         currentUserId={currentUser?.user}
                         isAdmin={admin}
+                        complaintAuthorId={problem.user_id}
                       />
                       </div>
                     </>
