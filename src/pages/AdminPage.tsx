@@ -186,7 +186,7 @@ const AdminPage = () => {
                           <p className="font-semibold text-foreground">
                             {c.title}
                           </p>
-                          <p className="text-sm text-muted-foreground mt-0.5">
+                          <p className="text-sm text-muted-foreground mt-0.5 break-all whitespace-pre-wrap">
                             {c.description}
                           </p>
                         </TableCell>

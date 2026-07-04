@@ -6,7 +6,7 @@ import {
   fetchEmployees,
   CATEGORY_LABELS,
 } from "@/services/problemsApi";
-import { statusLabel, priorityLabel } from "@/lib/complaintUtils";
+import { priorityLabel } from "@/lib/complaintUtils";
 import type { Complaint, Employee, Ticket } from "@/lib/types";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PrinterIcon, ArrowLeft01Icon } from "@hugeicons/core-free-icons";
@@ -52,14 +52,19 @@ const AdminTicketsPrintPage = () => {
     ? tickets
     : tickets.filter((t) => t.user?.user === Number(workerParam));
 
-  // Map complaint details
-  const ticketsWithComplaints: TicketWithComplaint[] = filteredTickets.map((t) => {
-    const complaint = complaints.find((c) => c.id === t.complaint);
-    return {
-      ...t,
-      complaintDetail: complaint,
-    };
-  });
+  // Map complaint details and filter out resolved/denied ones
+  const ticketsWithComplaints: TicketWithComplaint[] = filteredTickets
+    .map((t) => {
+      const complaint = complaints.find((c) => c.id === t.complaint);
+      return {
+        ...t,
+        complaintDetail: complaint,
+      };
+    })
+    .filter((t) => {
+      const status = t.complaintDetail?.status;
+      return status !== "resolved" && status !== "denied";
+    });
 
   // Group by worker
   const groups: { [key: string]: { workerName: string; tickets: TicketWithComplaint[] } } = {};
@@ -135,6 +140,34 @@ const AdminTicketsPrintPage = () => {
   return (
     <div className="bg-white text-black min-h-screen p-8 print-container font-sans antialiased">
       <style>{`
+        table {
+          border-collapse: collapse;
+          width: 100%;
+          table-layout: fixed;
+        }
+        th, td {
+          border: 1px solid #d1d5db !important;
+          padding: 8px !important;
+          vertical-align: middle !important;
+          word-break: break-all;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+        }
+        th {
+          text-align: center !important;
+        }
+        td:first-child {
+          text-align: left !important;
+        }
+        td:not(:first-child) {
+          text-align: center !important;
+        }
+        .print-title {
+          text-align: left !important;
+        }
+        .print-description {
+          text-align: left !important;
+        }
         @media print {
           body {
             background-color: white !important;
@@ -147,15 +180,6 @@ const AdminTicketsPrintPage = () => {
             width: 100% !important;
             padding: 0 !important;
             margin: 0 !important;
-          }
-          table {
-            border-collapse: collapse;
-            width: 100%;
-          }
-          th, td {
-            border: 1px solid #d1d5db !important;
-            padding: 8px !important;
-            text-align: left !important;
           }
           tr {
             page-break-inside: avoid;
@@ -194,7 +218,7 @@ const AdminTicketsPrintPage = () => {
 
         {ticketsWithComplaints.length === 0 ? (
           <div className="text-center py-12 text-gray-500 font-semibold border border-dashed border-gray-300">
-            Не знайдено жодного тікета для обраного фільтру.
+            Не знайдено жодного активного тікета для обраного фільтру.
           </div>
         ) : (
           sortedGroupKeys.map((groupKey) => {
@@ -209,26 +233,22 @@ const AdminTicketsPrintPage = () => {
                 <table className="w-full text-sm border-collapse border border-gray-300 mb-6">
                   <thead>
                     <tr className="bg-gray-50">
-                      <th className="border border-gray-300 p-2 font-bold w-12 text-center">ID</th>
-                      <th className="border border-gray-300 p-2 font-bold w-1/3">Проблема / Опис</th>
-                      <th className="border border-gray-300 p-2 font-bold text-center">Категорія</th>
-                      <th className="border border-gray-300 p-2 font-bold text-center">Кімната</th>
-                      <th className="border border-gray-300 p-2 font-bold text-center">Пріоритет</th>
-                      <th className="border border-gray-300 p-2 font-bold text-center">Дедлайн (Date to)</th>
-                      <th className="border border-gray-300 p-2 font-bold text-center">Статус</th>
+                      <th className="border border-gray-300 p-2 font-bold text-center" style={{ width: "40%" }}>Проблема / Опис</th>
+                      <th className="border border-gray-300 p-2 font-bold text-center" style={{ width: "18%" }}>Категорія</th>
+                      <th className="border border-gray-300 p-2 font-bold text-center" style={{ width: "14%" }}>Кімната</th>
+                      <th className="border border-gray-300 p-2 font-bold text-center" style={{ width: "14%" }}>Пріоритет</th>
+                      <th className="border border-gray-300 p-2 font-bold text-center" style={{ width: "14%" }}>Дедлайн</th>
                     </tr>
                   </thead>
                   <tbody>
                     {group.tickets.map((t) => {
                       const priority = t.complaintDetail?.priority || "medium";
                       const category = t.complaintDetail?.category || "";
-                      const status = t.complaintDetail?.status || "pending";
                       return (
                         <tr key={t.ticket_id} className="hover:bg-gray-50/50">
-                          <td className="border border-gray-300 p-2 text-center font-mono text-xs">{t.ticket_id}</td>
-                          <td className="border border-gray-300 p-2">
-                            <div className="font-bold text-gray-900">{t.complaintDetail?.title || "Без назви"}</div>
-                            <div className="text-xs text-gray-500 line-clamp-2 mt-0.5">{t.complaintDetail?.description || "Без опису"}</div>
+                          <td className="border border-gray-300 p-2 break-words">
+                            <div className="font-bold text-gray-900 break-words print-title">{t.complaintDetail?.title || "Без назви"}</div>
+                            <div className="text-xs text-gray-500 break-words whitespace-pre-wrap mt-1 print-description">{t.complaintDetail?.description || "Без опису"}</div>
                           </td>
                           <td className="border border-gray-300 p-2 text-center text-xs">
                             {CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] || category || "Інше"}
@@ -241,9 +261,6 @@ const AdminTicketsPrintPage = () => {
                           </td>
                           <td className="border border-gray-300 p-2 text-center text-xs font-semibold text-red-600">
                             {t.deadline ? new Date(t.deadline).toLocaleDateString("uk-UA") : "Не визначено"}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center text-xs">
-                            {statusLabel(status)}
                           </td>
                         </tr>
                       );

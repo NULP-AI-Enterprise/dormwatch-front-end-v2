@@ -407,7 +407,7 @@ const AdminComplaintsPage = () => {
                           )}
                         </div>
 
-                        <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                        <p className="text-xs text-muted-foreground leading-relaxed mb-4 break-all whitespace-pre-wrap">
                           {p.description || "—"}
                         </p>
 
@@ -607,7 +607,7 @@ const AdminComplaintsPage = () => {
                               </Badge>
                               <span className="text-xs text-muted-foreground">{p.building ? `Корпус ${p.building}` : "Корпус ?"}<span className="w-1 h-1 bg-border inline-block mx-1" />{p.placeName || "?"}</span>
                             </div>
-                            <p className="text-xs text-muted-foreground mb-4 line-clamp-3">{p.description}</p>
+                            <p className="text-xs text-muted-foreground mb-4 line-clamp-3 break-all whitespace-pre-wrap">{p.description}</p>
 
                             {ticket ? (
                               <div className="bg-primary/5 p-3 border border-primary/10 relative group/ticket">
