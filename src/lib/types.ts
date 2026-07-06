@@ -19,11 +19,28 @@ export interface Complaint {
   floor: string;
   photoUrl: string | null;
   thumbnail: string | null;
+  photoAfter?: string | null;
   status: string;
   priority: string;
   votesCount: number;
   createdAt: string;
   user_id: number | null;
+  deadline?: string | null;
+  creator?: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    photo_url: string | null;
+    contact_info?: string;
+  } | null;
+  assignedWorker?: {
+    user: number;
+    first_name: string;
+    last_name: string;
+    photo_url: string | null;
+    contact_info?: string;
+  } | null;
+  commentsCount: number;
 }
 
 export interface Comment {
@@ -31,6 +48,7 @@ export interface Comment {
   text: string;
   author: string;
   author_id: number;
+  author_role?: string;
   date: string;
 }
 
@@ -43,6 +61,7 @@ export interface Employee {
 export interface Ticket {
   ticket_id: number;
   complaint: number;
+  complaint_detail?: Complaint;
   user?: {
     user: number;
     first_name: string;

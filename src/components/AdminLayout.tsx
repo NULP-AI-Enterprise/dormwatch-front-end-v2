@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Building03Icon, DashboardSquare01Icon, GroupIcon, File01Icon, Megaphone01Icon, SettingsIcon } from "@hugeicons/core-free-icons";
+import { Building03Icon, DashboardSquare01Icon, GroupIcon, File01Icon, Megaphone01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "./ui/button";
 import { type ReactNode, useState } from "react";
 import { getUserInitials } from "../lib/complaintUtils";
@@ -27,15 +27,15 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
     <div className="min-h-screen flex flex-col md:flex-row bg-background bg-dot-grid relative">
       <aside className="w-full md:w-64 bg-background border-r border-border flex flex-col md:sticky md:top-0 md:h-screen z-40 relative">
         <div className="h-20 px-6 flex items-center border-b border-border">
-          <Link to="/admin" className="flex items-center gap-3 text-primary font-bold text-xl hover:text-primary/80 transition-colors">
-            <HugeiconsIcon icon={Building03Icon} className="size-6" />
+          <Link to="/" className="flex items-center gap-3 text-primary font-bold text-xl hover:text-primary/80 transition-colors">
+            <HugeiconsIcon icon={Building03Icon} className="size-6" strokeWidth={1.5} />
             <span>DormWatch</span>
           </Link>
         </div>
 
-        <nav className="flex-1 py-6 px-4 space-y-2">
+        <nav className="flex-1 py-6">
           {navItems.map((item) => {
-          const isActive = item.path !== "#" && (currentPath === item.path || (item.path !== '/admin' && currentPath.startsWith(item.path + "/")));
+            const isActive = currentPath === item.path;
             return (
               <Link
                 key={item.name}
@@ -53,12 +53,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
           })}
         </nav>
 
-        <div className="p-4 border-t border-border space-y-4">
-          <Button variant="ghost" onClick={() => setIsSettingsOpen(true)} className="w-full justify-start gap-3 px-4 py-3 text-sm font-semibold border-l-4 border-transparent text-left text-muted-foreground hover:text-foreground">
-            <HugeiconsIcon icon={SettingsIcon} className="size-5" />
-            Налаштування
-          </Button>
-
+        <div className="p-4 border-t border-border">
           <Button variant="ghost" onClick={() => setIsSettingsOpen(true)} className="w-full justify-start gap-3 px-4 py-3 text-left hover:bg-muted/50">
             <div className="w-10 h-10 bg-card border border-border flex items-center justify-center text-muted-foreground font-bold text-sm shrink-0">
               {initials}

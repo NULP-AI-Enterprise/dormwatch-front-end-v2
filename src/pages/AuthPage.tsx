@@ -3,11 +3,12 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { loginUser, registerUser, fetchBuildings, fetchPlaces } from "../services/problemsApi";
+import { loginUser, registerUser, fetchBuildings, fetchPlaces, fetchUserProfile } from "../services/problemsApi";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { isAdminUser, isWorkerUser } from "../lib/complaintUtils";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Building03Icon,
@@ -54,8 +55,12 @@ type RegisterData = z.infer<typeof registerSchema>;
 
 function AuthLayout({ children, heading, subtitle }: { children: ReactNode; heading: string; subtitle: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
-      <div className="w-full max-w-lg">
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10 relative overflow-hidden bg-background">
+      {/* Decorative premium blurry blobs */}
+      <div className="absolute top-[10%] left-[5%] w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: "6s" }} />
+      <div className="absolute bottom-[10%] right-[5%] w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: "8s" }} />
+
+      <div className="w-full max-w-lg relative z-10">
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-2 text-primary font-bold text-2xl mb-2">
             <HugeiconsIcon icon={Building03Icon} strokeWidth={2} className="size-8" />
@@ -131,6 +136,24 @@ const AuthPage = () => {
 
   const regBuildingId = registerForm.watch("building_id");
 
+  const routeUser = (profile: any) => {
+    if (isAdminUser(profile)) {
+      navigate("/admin");
+    } else if (isWorkerUser(profile)) {
+      navigate("/worker");
+    } else {
+      navigate("/home");
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile().then((profile) => {
+      if (profile) {
+        routeUser(profile);
+      }
+    }).catch(() => {});
+  }, [navigate]);
+
   useEffect(() => {
     fetchBuildings().then(setBuildings).catch(() => {});
   }, []);
@@ -154,7 +177,8 @@ const AuthPage = () => {
     try {
       await loginUser(data.email, data.password);
       window.dispatchEvent(new Event("profileUpdated"));
-      navigate("/");
+      const profile = await fetchUserProfile();
+      routeUser(profile);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Невірний email або пароль");
     } finally {
@@ -176,7 +200,8 @@ const AuthPage = () => {
         ...(data.place_id ? { place_id: data.place_id } : {}),
       });
       window.dispatchEvent(new Event("profileUpdated"));
-      navigate("/");
+      const profile = await fetchUserProfile();
+      routeUser(profile);
     } catch (err) {
       let msg = "Помилка реєстрації";
       if (err instanceof Error) {

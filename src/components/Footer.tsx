@@ -7,7 +7,10 @@ const Footer = () => {
     <footer className="bg-card border-t border-border py-12 text-foreground mt-12 shrink-0">
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div 
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-2 mb-2 cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <HugeiconsIcon icon={Building03Icon} className="size-5 text-primary" />
             <span className="text-lg font-bold">DormWatch</span>
           </div>

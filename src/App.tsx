@@ -10,6 +10,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import StudentLayout from "./components/StudentLayout";
 import AdminLayout from "./components/AdminLayout";
 import AdminTicketsPrintPage from "./pages/AdminTicketsPrintPage";
+import WorkerPage from "./pages/WorkerPage";
+import StudentHomePage from "./pages/StudentHomePage";
 
 function App() {
   return (
@@ -17,9 +19,19 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/auth" element={<AuthPage />} />
       <Route
+        path="/home"
+        element={
+          <ProtectedRoute requireStudent blockAdmin blockWorker>
+            <StudentLayout>
+              <StudentHomePage />
+            </StudentLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/user"
         element={
-          <ProtectedRoute blockAdmin>
+          <ProtectedRoute requireStudent blockAdmin blockWorker>
             <StudentLayout>
               <UserPage />
             </StudentLayout>
@@ -29,7 +41,7 @@ function App() {
       <Route
         path="/create-report"
         element={
-          <ProtectedRoute blockAdmin>
+          <ProtectedRoute requireStudent blockAdmin blockWorker>
             <StudentLayout>
               <CreateReportPage />
             </StudentLayout>
@@ -39,9 +51,11 @@ function App() {
       <Route
         path="/dashboard"
         element={
-          <StudentLayout>
-            <DashboardPage />
-          </StudentLayout>
+          <ProtectedRoute requireStudent blockAdmin blockWorker>
+            <StudentLayout>
+              <DashboardPage />
+            </StudentLayout>
+          </ProtectedRoute>
         }
       />
       <Route
@@ -69,6 +83,16 @@ function App() {
         element={
           <ProtectedRoute requireAdmin>
             <AdminTicketsPrintPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/worker"
+        element={
+          <ProtectedRoute requireWorker>
+            <StudentLayout>
+              <WorkerPage />
+            </StudentLayout>
           </ProtectedRoute>
         }
       />

@@ -16,10 +16,18 @@ interface CommentSectionProps {
   complaintId: number;
   currentUserId?: number | string;
   isAdmin?: boolean;
+  isWorker?: boolean;
   complaintAuthorId?: number | null;
 }
 
-const CommentSection = ({ complaintId, currentUserId, isAdmin, complaintAuthorId }: CommentSectionProps) => {
+const QUICK_TEMPLATES = [
+  "⏱️ Заявку прийнято, буду у вас протягом години.",
+  "📦 Потрібні додаткові деталі, замовляємо на складі.",
+  "🔧 Ремонтні роботи розпочато.",
+  "✅ Ремонт завершено. Будь ласка, перевірте."
+];
+
+const CommentSection = ({ complaintId, currentUserId, isAdmin, isWorker, complaintAuthorId }: CommentSectionProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -79,8 +87,10 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin, complaintAuthorId
               <div className="flex justify-between items-baseline mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-foreground">{c.author}</span>
-                  {c.author_id === currentUserId && isAdmin ? (
+                  {c.author_role && ["admin", "адміністратор"].includes(c.author_role) ? (
                     <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 bg-blue-500 text-white hover:bg-blue-600">Адміністратор</Badge>
+                  ) : c.author_role && ["worker", "робітник", "майстер"].includes(c.author_role) ? (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-[#d7ccc8] bg-[#4e342e] border-[#5d4037]">Працівник</Badge>
                   ) : c.author_id === complaintAuthorId ? (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-green-600 border-green-600">Автор скарги</Badge>
                   ) : (
@@ -102,12 +112,27 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin, complaintAuthorId
         </div>
       )}
 
+      {isWorker && (
+        <div className="flex flex-wrap gap-1 mb-2.5">
+          {QUICK_TEMPLATES.map((tmpl) => (
+            <button
+              key={tmpl}
+              type="button"
+              onClick={() => setInput(tmpl)}
+              className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground border border-border px-2 py-0.5 rounded transition-colors text-left font-medium"
+            >
+              {tmpl.split(" ")[0]} {tmpl.substring(tmpl.indexOf(" ") + 1, tmpl.indexOf(",") > 0 ? tmpl.indexOf(",") : tmpl.length)}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="flex gap-2">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Написати коментар..."
-          className="flex-1"
+          className="flex-1 text-xs"
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
         <Button onClick={handleSend}>

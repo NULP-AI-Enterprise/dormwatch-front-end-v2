@@ -11,6 +11,7 @@ interface TicketCardProps {
   status: string;
   location?: string;
   categoryLabel?: string;
+  onClick?: () => void;
 }
 
 const stageMap: Record<string, "submitted" | "in_progress" | "resolved"> = {
@@ -35,11 +36,14 @@ const TicketCardSkeleton = () => (
   </div>
 );
 
-const TicketCard = ({ id, title, description, category, date, status, location, categoryLabel }: TicketCardProps) => {
+const TicketCard = ({ id, title, description, category, date, status, location, categoryLabel, onClick }: TicketCardProps) => {
   const step = stageMap[status] || "submitted";
 
   return (
-    <div className="group/ticket bg-card border border-border relative overflow-hidden hover:border-border transition-colors">
+    <div 
+      onClick={onClick}
+      className={`group/ticket bg-card border border-border relative overflow-hidden hover:border-border transition-colors ${onClick ? "cursor-pointer" : ""}`}
+    >
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover/ticket:opacity-100 transition-opacity" />
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">

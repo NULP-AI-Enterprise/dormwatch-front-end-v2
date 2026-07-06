@@ -53,9 +53,9 @@ const Header = () => {
 
             <div className="hidden md:flex items-center">
               <Link
-                to="/"
+                to={user ? "/home" : "/"}
                 className={`px-4 py-5 text-sm font-semibold transition-colors border-b-2 ${
-                  currentPath === "/"
+                  currentPath === (user ? "/home" : "/")
                     ? "border-blue-500 text-foreground bg-muted/50"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}

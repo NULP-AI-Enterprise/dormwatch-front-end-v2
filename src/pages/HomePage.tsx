@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { fetchUserProfile } from "../services/problemsApi";
 import { Button } from "../components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -7,31 +7,48 @@ import { ArrowRight01Icon, SearchIcon, Building03Icon, Camera01Icon, Activity01I
 import LoadingSpinner from "../components/LoadingSpinner";
 import Footer from "../components/Footer";
 import { Separator } from "../components/ui/separator";
-import { isAdminUser } from "../lib/complaintUtils";
+import { isAdminUser, isWorkerUser, getUserInitials } from "../lib/complaintUtils";
+import { SettingsModal } from "../components/SettingsModal";
 
 const HomePage = () => {
-  const navigate = useNavigate();
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     const checkAuth = async () => {
       try {
-        const user = await fetchUserProfile();
+        const profile = await fetchUserProfile();
         if (!mounted) return;
-        if (user) {
-          navigate(isAdminUser(user) ? "/admin" : "/user", { replace: true });
-          return;
+        if (profile) {
+          setUser(profile);
         }
       } catch {
-        // not logged in — show landing
+        // not logged in
       } finally {
         if (mounted) setCheckingAuth(false);
       }
     };
     checkAuth();
     return () => { mounted = false; };
-  }, [navigate]);
+  }, []);
+
+  const dashboardPath = user
+    ? isAdminUser(user)
+      ? "/admin"
+      : isWorkerUser(user)
+      ? "/worker"
+      : "/home"
+    : "/auth";
+
+  const reportPath = user
+    ? isAdminUser(user)
+      ? "/admin"
+      : isWorkerUser(user)
+      ? "/worker"
+      : "/create-report"
+    : "/auth";
 
   if (checkingAuth) {
     return (
@@ -41,27 +58,58 @@ const HomePage = () => {
     );
   }
 
+  const initials = getUserInitials(user, "U");
+
+  const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <nav className="bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-primary font-bold text-xl tracking-tight">
+          <Link
+            to="/"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-2 text-primary font-bold text-xl tracking-tight cursor-pointer hover:opacity-85 transition-opacity"
+          >
             <HugeiconsIcon icon={Building03Icon} className="size-6" strokeWidth={1.5} />
             <span>DormWatch</span>
-          </div>
+          </Link>
 
           <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-muted-foreground">
-            <a href="#how-it-works" className="hover:text-foreground transition-colors">Як це працює</a>
-            <a href="#faq" className="hover:text-foreground transition-colors">Поширені запитання</a>
-            <a href="#emergency" className="hover:text-foreground transition-colors">Екстрені контакти</a>
+            <a href="#how-it-works" onClick={(e) => handleScrollTo(e, "how-it-works")} className="hover:text-foreground transition-colors">Як це працює</a>
+            <a href="#faq" onClick={(e) => handleScrollTo(e, "faq")} className="hover:text-foreground transition-colors">Поширені запитання</a>
+            <a href="#emergency" onClick={(e) => handleScrollTo(e, "emergency")} className="hover:text-foreground transition-colors">Екстрені контакти</a>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Button asChild>
-              <Link to="/auth">
-                Вхід для студентів
-              </Link>
-            </Button>
+          <div className="flex items-center gap-2">
+            {user ? (
+              <Button
+                variant="ghost"
+                onClick={() => setIsSettingsOpen(true)}
+                className="w-10 h-10 rounded-full p-0 bg-muted hover:bg-muted/80 border border-border flex items-center justify-center text-foreground font-bold text-sm"
+              >
+                {initials}
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="ghost" className="text-sm font-semibold hover:text-foreground">
+                  <Link to="/auth?tab=login">
+                    Увійти
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/auth?tab=register">
+                    Зареєструватися
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
         <Separator />
@@ -77,18 +125,37 @@ const HomePage = () => {
               Створюйте заявки на ремонт у вашому гуртожитку менш ніж за 15 секунд. Відстежуйте оновлення статусу в режимі реального часу. Без завантаження додатків та очікування на лінії.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="gap-2">
-                <Link to="/auth">
-                  Повідомити про проблему
-                  <HugeiconsIcon icon={ArrowRight01Icon} className="size-5" strokeWidth={2} />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="gap-2">
-                <Link to="/dashboard">
-                  <HugeiconsIcon icon={SearchIcon} className="size-5" strokeWidth={2} />
-                  Відстежити заявку
-                </Link>
-              </Button>
+              {user ? (
+                <>
+                  <Button asChild size="lg" className="gap-2">
+                    <Link to={isAdminUser(user) ? "/admin" : isWorkerUser(user) ? "/worker" : "/home"}>
+                      <HugeiconsIcon icon={Building03Icon} className="size-5" strokeWidth={2} />
+                      На головну
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="lg" className="gap-2">
+                    <Link to={isAdminUser(user) ? "/admin" : isWorkerUser(user) ? "/worker" : "/user"}>
+                      {isAdminUser(user) || isWorkerUser(user) ? "Перейти до панелі" : "Перейти до кабінету"}
+                      <HugeiconsIcon icon={ArrowRight01Icon} className="size-5" strokeWidth={2} />
+                    </Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild size="lg" className="gap-2">
+                    <Link to={reportPath}>
+                      Повідомити про проблему
+                      <HugeiconsIcon icon={ArrowRight01Icon} className="size-5" strokeWidth={2} />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="lg" className="gap-2">
+                    <Link to="/auth?tab=login">
+                      <HugeiconsIcon icon={SearchIcon} className="size-5" strokeWidth={2} />
+                      Відстежити заявку
+                    </Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 
@@ -104,7 +171,7 @@ const HomePage = () => {
               <div className="bg-card border border-border p-4">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-xs text-muted-foreground font-semibold">Сантехніка</span>
-                  <span className="px-2 py-0.5 bg-yellow-900/30 text-yellow-500 border border-yellow-700/50 text-xs font-semibold">Очікує</span>
+                  <span className="px-2 py-0.5 bg-red-500/10 text-red-500 border border-red-700/50 text-xs font-semibold">Очікує</span>
                 </div>
                 <div className="w-3/4 h-3 bg-muted mb-2" />
                 <div className="w-full h-2 bg-muted mb-1" />
@@ -113,7 +180,7 @@ const HomePage = () => {
               <div className="bg-card border border-border p-4">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-xs text-muted-foreground font-semibold">Опалення</span>
-                  <span className="px-2 py-0.5 bg-primary/30 text-blue-500 border border-blue-700/50 text-xs font-semibold">В роботі</span>
+                  <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-500 border border-yellow-700/50 text-xs font-semibold">Активно</span>
                 </div>
                 <div className="w-1/2 h-3 bg-muted mb-2" />
                 <div className="w-full h-2 bg-muted mb-1" />
@@ -160,7 +227,7 @@ const HomePage = () => {
             </div>
             <h3 className="text-xl font-bold text-foreground mb-3">Сфотографуйте та надішліть</h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Не намагайтеся пояснити, де протікає. Просто зробіть фото, вкажіть номер кімнати, і наша система автоматично направить заявку до потрібного відділу.
+              Не намагайтеся пояснити, де протікає. Просто зробіть photo, вкажіть номер кімнати, і наша система автоматично направить заявку до потрібного відділу.
             </p>
           </div>
           <div className="bg-card border border-border p-8 relative group hover:border-stone-500 transition-colors">
@@ -190,11 +257,15 @@ const HomePage = () => {
       <section className="bg-background py-20 relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <h2 className="text-3xl font-bold text-foreground mb-6">Потрібно щось полагодити?</h2>
-          <p className="text-muted-foreground mb-8 text-lg">Увійдіть за допомогою студентського квитка, щоб надіслати заявку безпосередньо до служби експлуатації кампусу.</p>
+          <p className="text-muted-foreground mb-8 text-lg">
+            {user
+              ? "Перейдіть до особистого кабінету, щоб переглянути ваші скарги чи створити нові."
+              : "Увійдіть за допомогою студентського квитка, щоб надіслати заявку безпосередньо до служби експлуатації кампусу."}
+          </p>
           <div className="flex justify-center gap-4">
             <Button asChild size="lg" className="gap-2">
-              <Link to="/auth">
-                Розпочати
+              <Link to={dashboardPath}>
+                {user ? "Перейти до кабінету" : "Розпочати"}
                 <HugeiconsIcon icon={ArrowRight01Icon} className="size-5" strokeWidth={2} />
               </Link>
             </Button>
@@ -204,6 +275,7 @@ const HomePage = () => {
       <Separator />
 
       <Footer />
+      <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
     </div>
   );
 };

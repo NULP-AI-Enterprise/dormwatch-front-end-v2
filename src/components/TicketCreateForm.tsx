@@ -10,7 +10,7 @@ import {
 } from "./ui/select";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, AddIcon, SaveIcon } from "@hugeicons/core-free-icons";
-import { fetchApprovedComplaints, fetchEmployees, createTicket, updateTicket } from "../services/problemsApi";
+import { fetchEmployees, createTicket, updateTicket, fetchAllComplaints, fetchTickets, updateComplaintStatus } from "../services/problemsApi";
 import type { Complaint, Employee, Ticket } from "../lib/types";
 import { DatePicker } from "./ui/date-picker";
 import { format } from "date-fns";
@@ -37,12 +37,38 @@ const TicketCreateForm = ({ onClose, onSaved, editTicket, fixedComplaintId }: Ti
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchApprovedComplaints("new").then(setComplaints);
-    fetchEmployees().then(setEmployees);
-  }, []);
+    const loadData = async () => {
+      try {
+        const [allComplaints, allTickets, allEmployees] = await Promise.all([
+          fetchAllComplaints(),
+          fetchTickets(),
+          fetchEmployees()
+        ]);
+
+        const unassigned = allComplaints.filter(c => {
+          if (editTicket && String(c.id) === String(editTicket.complaint)) {
+            return true;
+          }
+          if (fixedComplaintId && String(c.id) === String(fixedComplaintId)) {
+            return true;
+          }
+          const isActiveOrPending = c.status === "pending" || c.status === "approved";
+          const isUnassigned = !allTickets.some(t => String(t.complaint) === String(c.id));
+          return isActiveOrPending && isUnassigned;
+        });
+
+        setComplaints(unassigned);
+        setEmployees(allEmployees);
+      } catch (err) {
+        console.warn("Failed to load TicketCreateForm data", err);
+      }
+    };
+    loadData();
+  }, [editTicket, fixedComplaintId]);
 
   const handleSave = async () => {
-    if (!selectedComplaint) return;
+    const complaintIdToUse = fixedComplaintId || Number(selectedComplaint);
+    if (!complaintIdToUse) return;
     setSaving(true);
     try {
       const deadlineStr = deadlineDate ? format(deadlineDate, "yyyy-MM-dd") : null;
@@ -54,14 +80,23 @@ const TicketCreateForm = ({ onClose, onSaved, editTicket, fixedComplaintId }: Ti
         );
       } else {
         await createTicket(
-          Number(selectedComplaint),
+          complaintIdToUse,
           selectedEmployee || null,
           deadlineStr
         );
+        // Automatically approve the complaint if it was pending
+        const target = complaints.find(c => String(c.id) === String(complaintIdToUse));
+        if (target && target.status === "pending") {
+          try {
+            await updateComplaintStatus(target.id, "approved");
+          } catch (statusErr) {
+            console.error("Failed to auto-approve complaint:", statusErr);
+          }
+        }
       }
       onSaved();
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error("Failed to save ticket:", err);
     } finally {
       setSaving(false);
     }
@@ -73,18 +108,24 @@ const TicketCreateForm = ({ onClose, onSaved, editTicket, fixedComplaintId }: Ti
         <label className="text-xs font-semibold text-muted-foreground mb-2 block">
           Скарга
         </label>
-        <Select value={selectedComplaint} onValueChange={setSelectedComplaint} disabled={!!fixedComplaintId || !!editTicket}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Виберіть скаргу..." />
-          </SelectTrigger>
-          <SelectContent>
-            {complaints.map((c) => (
-              <SelectItem key={c.id} value={String(c.id)}>
-                {c.title || `Скарга #${c.id}`}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {fixedComplaintId ? (
+          <div className="w-full h-10 px-3 py-2 border border-border bg-muted/50 rounded-md text-xs font-semibold text-foreground flex items-center">
+            {complaints.find(c => String(c.id) === String(fixedComplaintId))?.title || "Завантаження..."}
+          </div>
+        ) : (
+          <Select value={selectedComplaint} onValueChange={setSelectedComplaint} disabled={!!editTicket}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Виберіть скаргу..." />
+            </SelectTrigger>
+            <SelectContent>
+              {complaints.map((c) => (
+                <SelectItem key={c.id} value={String(c.id)}>
+                  {c.title || `Скарга #${c.id}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       <div>

@@ -55,6 +55,7 @@ import {
   AddIcon,
   MoreHorizontalIcon,
   Download01Icon,
+  Ticket01Icon,
 } from "@hugeicons/core-free-icons";
 import type { Complaint, Ticket, Employee } from "../lib/types";
 import { ExportTicketsModal } from "../components/ExportTicketsModal";
@@ -78,6 +79,14 @@ const ticketStatusOptions = [
   { id: "all", name: "Всі" },
   { id: "not_created", name: "Без тікета" },
   { id: "created", name: "З тікетом" },
+];
+
+const priorityOptions = [
+  { id: "all", name: "Всі пріоритети" },
+  { id: "low", name: "Низький" },
+  { id: "medium", name: "Середній" },
+  { id: "high", name: "Високий" },
+  { id: "critical", name: "Критичний" },
 ];
 
 function FilterRadioGroup({
@@ -113,13 +122,15 @@ function FilterRadioGroup({
 const AdminComplaintsPage = () => {
   const location = useLocation();
   const { user: currentUser } = useUser();
-  const [selectedStatus, setSelectedStatus] = useState(location.state?.selectedStatus || "pending");
+  const [selectedStatus, setSelectedStatus] = useState(location.state?.selectedStatus || "all");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedPriority, setSelectedPriority] = useState("all");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const [ticketStatus, setTicketStatus] = useState("all");
   const [ticketCategory, setTicketCategory] = useState("all");
+  const [ticketPriority, setTicketPriority] = useState("all");
 
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [approvedForTickets, setApprovedForTickets] = useState<Complaint[]>([]);
@@ -159,9 +170,15 @@ const AdminComplaintsPage = () => {
 
   useEffect(() => {
     loadComplaints();
+    loadTickets();
     
-    window.addEventListener("adminComplaintUpdated", loadComplaints);
-    return () => window.removeEventListener("adminComplaintUpdated", loadComplaints);
+    const handleUpdate = () => {
+      loadComplaints();
+      loadTickets();
+    };
+    
+    window.addEventListener("adminComplaintUpdated", handleUpdate);
+    return () => window.removeEventListener("adminComplaintUpdated", handleUpdate);
   }, []);
 
   const [tab, setTab] = useState<"requests" | "tickets">("requests");
@@ -178,6 +195,7 @@ const AdminComplaintsPage = () => {
     try {
       await updateComplaintStatus(id, newStatus);
       loadComplaints();
+      loadTickets();
     } catch (err) {
       console.warn('Failed to change complaint status', err);
     }
@@ -204,14 +222,16 @@ const AdminComplaintsPage = () => {
         const statusOk = selectedStatus === "all" || p.status === selectedStatus;
         const categoryOk =
           selectedCategory === "all" || p.category === selectedCategory;
+        const priorityOk =
+          selectedPriority === "all" || p.priority === selectedPriority;
         const searchOk =
           searchQuery === "" ||
           (p.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
           (p.description || "").toLowerCase().includes(searchQuery.toLowerCase());
         const dateOk = !selectedDate || new Date(p.createdAt).toLocaleDateString('en-CA') === format(selectedDate, 'yyyy-MM-dd');
-        return statusOk && categoryOk && searchOk && dateOk;
+        return statusOk && categoryOk && priorityOk && searchOk && dateOk;
       }),
-    [complaints, selectedStatus, selectedCategory, searchQuery, selectedDate]
+    [complaints, selectedStatus, selectedCategory, selectedPriority, searchQuery, selectedDate]
   );
 
   const filteredTickets = useMemo(
@@ -219,6 +239,8 @@ const AdminComplaintsPage = () => {
       approvedForTickets.filter((p) => {
         const categoryOk =
           ticketCategory === "all" || p.category === ticketCategory;
+        const priorityOk =
+          ticketPriority === "all" || p.priority === ticketPriority;
         const searchOk =
           ticketSearchQuery === "" ||
           (p.title || "").toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
@@ -227,9 +249,9 @@ const AdminComplaintsPage = () => {
         let statusOk = true;
         if (ticketStatus === "created") statusOk = hasTicket;
         else if (ticketStatus === "not_created") statusOk = !hasTicket;
-        return categoryOk && searchOk && statusOk;
+        return categoryOk && priorityOk && searchOk && statusOk;
       }),
-    [approvedForTickets, tickets, ticketCategory, ticketStatus, ticketSearchQuery]
+    [approvedForTickets, tickets, ticketCategory, ticketPriority, ticketStatus, ticketSearchQuery]
   );
 
   return (
@@ -253,11 +275,11 @@ const AdminComplaintsPage = () => {
       <div className="flex-1 flex flex-col min-h-screen">
       <Tabs value={tab} onValueChange={(v) => setTab(v as "requests" | "tickets")} className="flex-1 flex flex-col">
           <div className="flex items-center justify-between pr-6">
-            <TabsList variant="line" className="h-auto bg-transparent">
-              <TabsTrigger value="requests" className="px-5 py-3 text-xs font-semibold">
+            <TabsList className="bg-muted/50 p-1 rounded-xl border border-border h-auto inline-flex gap-1 ml-6 mt-4">
+              <TabsTrigger value="requests" className="px-6 py-2 text-xs font-semibold rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200">
                 Скарги
               </TabsTrigger>
-              <TabsTrigger value="tickets" className="px-5 py-3 text-xs font-semibold">
+              <TabsTrigger value="tickets" className="px-6 py-2 text-xs font-semibold rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200">
                 Тікети
               </TabsTrigger>
             </TabsList>
@@ -306,6 +328,17 @@ const AdminComplaintsPage = () => {
                     <Separator className="my-4" />
 
                     <h4 className="text-xs font-semibold text-muted-foreground mb-3">
+                      Пріоритет
+                    </h4>
+                    <FilterRadioGroup
+                      options={priorityOptions}
+                      value={selectedPriority}
+                      onChange={setSelectedPriority}
+                    />
+
+                    <Separator className="my-4" />
+
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-3">
                       Категорії
                     </h4>
                     <FilterRadioGroup
@@ -320,11 +353,25 @@ const AdminComplaintsPage = () => {
                       Дата подання
                     </h4>
                     <div className="space-y-2">
-                      <DatePicker
-                        date={selectedDate}
-                        setDate={setSelectedDate}
-                        placeholder="Оберіть дату"
-                      />
+                      <div className="flex items-center gap-1.5">
+                        <DatePicker
+                          date={selectedDate}
+                          setDate={setSelectedDate}
+                          placeholder="Оберіть дату"
+                          className="flex-1"
+                        />
+                        {selectedDate && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSelectedDate(undefined)}
+                            className="size-9 shrink-0 hover:bg-muted"
+                            title="Очистити дату"
+                          >
+                            <HugeiconsIcon icon={Cancel01Icon} className="size-4 text-muted-foreground" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -354,182 +401,185 @@ const AdminComplaintsPage = () => {
 
                 {!loading &&
                   !err &&
-                  filteredComplaints.map((p) => (
-                    <Card
-                      key={p.id}
-                      className="border-border shadow-none bg-card group hover:bg-muted/50 transition-colors cursor-pointer"
-                      onClick={(e) => {
-                        if ((e.target as HTMLElement).closest('button, [role="dialog"], a')) return;
-                        setSelectedComplaint(p);
-                        setSheetOpen(true);
-                      }}
-                    >
-                      <div className="p-6">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
-                          <div>
-                            <h3 className="text-sm font-semibold text-foreground truncate max-w-xl">
-                              {p.title || "Без назви"}
-                            </h3>
-                            <p className="text-xs font-normal text-muted-foreground mt-1">
-                              {CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] || p.category || "Категорія"}<span className="w-1 h-1 bg-border inline-block mx-1" />{p.building ? `Корпус ${p.building}` : "Корпус ?"}<span className="w-1 h-1 bg-border inline-block mx-1" />{p.placeName || "?"}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={statusBadgeClass(p.status)}>
-                              {statusLabel(p.status)}
-                            </Badge>
-                            <Button
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedComplaint(p);
-                                setSheetOpen(true);
-                              }}
-                              className="text-muted-foreground"
-                            >
-                              <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4 mr-1.5" />
-                              Деталі
-                            </Button>
-                          </div>
-                        </div>
+                  filteredComplaints.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filteredComplaints.map((p) => (
+                        <Card
+                          key={p.id}
+                          className={`border-border shadow-none bg-card group hover:bg-muted/50 transition-colors cursor-pointer flex flex-col justify-between border-l-4 ${
+                            p.priority === "critical" ? "border-l-red-600" :
+                            p.priority === "high" ? "border-l-orange-500" :
+                            p.priority === "medium" ? "border-l-yellow-500" : "border-l-green-500"
+                          }`}
+                          onClick={(e) => {
+                            if ((e.target as HTMLElement).closest('button, [role="dialog"], a')) return;
+                            setSelectedComplaint(p);
+                            setSheetOpen(true);
+                          }}
+                        >
+                          <div className="p-5 flex flex-col h-full justify-between">
+                            <div>
+                              <div className="flex justify-between items-start mb-2 gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="text-sm font-bold text-foreground truncate" title={p.title}>
+                                    {p.title || "Без назви"}
+                                  </h3>
+                                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                                    {CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] || p.category || "Категорія"}
+                                    <span className="w-1 h-1 bg-border inline-block mx-1.5 align-middle" />
+                                    {p.building ? `Корпус ${p.building}` : "Корпус ?"}
+                                    <span className="w-1 h-1 bg-border inline-block mx-1.5 align-middle" />
+                                    {p.placeName || "?"}
+                                  </p>
+                                </div>
+                                <Badge variant="outline" className={`shrink-0 text-[10px] px-1.5 py-0 ${statusBadgeClass(p.status)}`}>
+                                  {statusLabel(p.status)}
+                                </Badge>
+                              </div>
 
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          <Badge
-                            variant="outline"
-                            className={priorityBadgeClass(p.priority)}
-                          >
-                            Пріоритет: {priorityLabel(p.priority)}
-                          </Badge>
-                          {p.createdAt && (
-                            <span className="text-xs text-muted-foreground font-semibold">
-                              {new Date(p.createdAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="text-xs text-muted-foreground leading-relaxed mb-4 break-all whitespace-pre-wrap">
-                          {p.description || "—"}
-                        </p>
-
-                        {p.photoUrl && (
-                          <div 
-                            className="w-full h-44 overflow-hidden border border-border mb-4 cursor-zoom-in"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPreviewImage(resolveImageUrl(p.photoUrl as string));
-                            }}
-                          >
-                            <img
-                              src={resolveImageUrl(p.thumbnail || p.photoUrl)}
-                              alt=""
-                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                            />
-                          </div>
-                        )}
-
-                        <div className="flex flex-col md:flex-row md:items-center justify-between pt-4 gap-4">
-                          <div className="flex items-center gap-4">
-                            <span className="text-xs text-muted-foreground font-semibold">
-                              ID: {p.id}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            {p.status === "pending" && (
-                              <>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button>
-                                      <HugeiconsIcon icon={CheckmarkCircleIcon} className="size-3 mr-1" strokeWidth={2} />
-                                      Схвалити
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Схвалити скаргу?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Ви впевнені, що хочете схвалити цю скаргу? Вона перейде в статус "Активно".
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Скасувати</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleChangeStatus(p.id, "approved")}>Схвалити</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="destructive"
-                                    >
-                                      <HugeiconsIcon icon={CancelCircleIcon} className="size-3 mr-1" strokeWidth={2} />
-                                      Відхилити
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Відхилити скаргу?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Ви впевнені, що хочете відхилити цю скаргу? Вона перейде в статус "Відхилено".
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Скасувати</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleChangeStatus(p.id, "rejected")} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Відхилити</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </>
-                            )}
-                            {p.status === "approved" && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button>
-                                    <HugeiconsIcon icon={CheckmarkCircleIcon} className="size-3 mr-1" strokeWidth={2} />
-                                    Вирішити
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Позначити як вирішену?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Ви впевнені, що проблема була успішно вирішена? Скарга перейде в статус "Вирішено".
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Скасувати</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleChangeStatus(p.id, "resolved")}>Вирішити</AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            )}
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="destructive"
+                              <div className="flex flex-wrap items-center gap-2 mb-3">
+                                <Badge
+                                  variant="outline"
+                                  className={`text-[10px] px-1.5 py-0 ${priorityBadgeClass(p.priority)}`}
                                 >
-                                  <HugeiconsIcon icon={Delete01Icon} className="size-3 mr-1" strokeWidth={2} />
-                                  Видалити
+                                  {priorityLabel(p.priority)}
+                                </Badge>
+                                {p.createdAt && (
+                                  <span className="text-[11px] text-muted-foreground font-semibold">
+                                    {new Date(p.createdAt).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="text-xs text-muted-foreground leading-relaxed mb-4 line-clamp-2 break-all whitespace-pre-wrap">
+                                {p.description || "—"}
+                              </p>
+
+                              {p.photoUrl && (
+                                <div 
+                                  className="w-full h-32 overflow-hidden border border-border mb-4 cursor-zoom-in rounded-lg"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPreviewImage(resolveImageUrl(p.photoUrl as string));
+                                  }}
+                                >
+                                  <img
+                                    src={resolveImageUrl(p.thumbnail || p.photoUrl)}
+                                    alt=""
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                  />
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="pt-3 border-t border-border/50 flex flex-col gap-2 mt-auto">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] text-muted-foreground font-mono font-semibold">
+                                  ID: {p.id}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedComplaint(p);
+                                    setSheetOpen(true);
+                                  }}
+                                  className="text-muted-foreground h-7 text-xs px-2"
+                                >
+                                  <HugeiconsIcon icon={MoreHorizontalIcon} className="size-3.5 mr-1 text-muted-foreground" />
+                                  Деталі
                                 </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Видалити скаргу?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Ви впевнені, що хочете видалити цю скаргу? Цю дію неможливо скасувати.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Скасувати</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleRemove(p.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Видалити</AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                              </div>
+
+                              <div className="flex flex-wrap gap-1.5">
+                                {p.status === "pending" && (
+                                  <>
+                                    <Button size="sm" className="h-8 text-[11px] flex-1" onClick={() => openTicketModal(p)}>
+                                      <HugeiconsIcon icon={Ticket01Icon} className="size-3 mr-1" strokeWidth={2} />
+                                      Призначити
+                                    </Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          variant="destructive"
+                                          size="sm"
+                                          className="h-8 text-[11px] flex-1"
+                                        >
+                                          <HugeiconsIcon icon={CancelCircleIcon} className="size-3 mr-1" strokeWidth={2} />
+                                          Відхилити
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Відхилити скаргу?</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Ви впевнені, що хочете відхилити цю скаргу? Вона перейде в статус "Відхилено".
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => handleChangeStatus(p.id, "rejected")} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Відхилити</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </>
+                                )}
+                                {p.status === "approved" && tickets.some(t => t.complaint === p.id) && (
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button size="sm" className="h-8 text-[11px] w-full">
+                                        <HugeiconsIcon icon={CheckmarkCircleIcon} className="size-3 mr-1" strokeWidth={2} />
+                                        Позначити як виконане
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Позначити як виконану?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Ви впевнені, що проблема була успішно виконана? Скарга перейде в статус "Вирішено".
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleChangeStatus(p.id, "resolved")}>Позначити як виконане</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                )}
+                                {p.status !== "resolved" && (
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        className={`h-8 text-[11px] ${p.status === "pending" ? "w-full" : "flex-1"}`}
+                                      >
+                                        <HugeiconsIcon icon={Delete01Icon} className="size-3 mr-1" strokeWidth={2} />
+                                        Видалити
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Видалити скаргу?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Ви впевнені, що хочете видалити цю скаргу? Цю дію неможливо скасувати.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleRemove(p.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Видалити</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
+                        </Card>
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
           </TabsContent>
@@ -556,6 +606,17 @@ const AdminComplaintsPage = () => {
                       options={ticketStatusOptions}
                       value={ticketStatus}
                       onChange={setTicketStatus}
+                    />
+
+                    <Separator className="my-4" />
+
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-3">
+                      Пріоритет
+                    </h4>
+                    <FilterRadioGroup
+                      options={priorityOptions}
+                      value={ticketPriority}
+                      onChange={setTicketPriority}
                     />
 
                     <Separator className="my-4" />
@@ -609,11 +670,8 @@ const AdminComplaintsPage = () => {
                             </div>
                             <p className="text-xs text-muted-foreground mb-4 line-clamp-3 break-all whitespace-pre-wrap">{p.description}</p>
 
-                            {ticket ? (
+                             {ticket ? (
                               <div className="bg-primary/5 p-3 border border-primary/10 relative group/ticket">
-                                <p className="text-xs font-bold text-primary">
-                                  Тікет створено (ID: {ticket.ticket_id})
-                                </p>
                                 {ticket.user && (
                                   <p className="text-xs text-primary/80 mt-1">
                                     Виконавець: {ticket.user.first_name} {ticket.user.last_name}
@@ -624,22 +682,26 @@ const AdminComplaintsPage = () => {
                                     Дедлайн: {new Date(ticket.deadline).toLocaleDateString()}
                                   </p>
                                 )}
-                                <Button
-                                  variant="ghost"
-                                  size="icon-xs"
-                                  onClick={() => openTicketModal(p, ticket)}
-                                  className="absolute top-2 right-2 text-primary hover:text-blue-300 opacity-0 group-hover/ticket:opacity-100 transition-opacity"
-                                >
-                                  <HugeiconsIcon icon={EditIcon} className="size-3.5" strokeWidth={2} />
-                                </Button>
+                                {p.status !== "resolved" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    onClick={() => openTicketModal(p, ticket)}
+                                    className="absolute top-2 right-2 text-primary hover:text-blue-300 opacity-0 group-hover/ticket:opacity-100 transition-opacity"
+                                  >
+                                    <HugeiconsIcon icon={EditIcon} className="size-3.5" strokeWidth={2} />
+                                  </Button>
+                                )}
                               </div>
                             ) : (
-                              <Button
-                                onClick={() => openTicketModal(p)}
-                              >
-                                <HugeiconsIcon icon={AddIcon} className="size-4 mr-1.5" strokeWidth={2} />
-                                Створити тікет
-                              </Button>
+                              p.status !== "resolved" && (
+                                <Button
+                                  onClick={() => openTicketModal(p)}
+                                >
+                                  <HugeiconsIcon icon={AddIcon} className="size-4 mr-1.5" strokeWidth={2} />
+                                  Створити тікет
+                                </Button>
+                              )
                             )}
                           </div>
                         </Card>
@@ -661,9 +723,13 @@ const AdminComplaintsPage = () => {
             setSheetOpen(open);
             if (!open) setSelectedComplaint(null);
           }}
-          onStatusChange={loadComplaints}
+          onStatusChange={() => {
+            loadComplaints();
+            loadTickets();
+          }}
           currentUserId={currentUser?.user}
           isAdmin={true}
+          ticket={tickets.find(t => t.complaint === selectedComplaint?.id)}
         />
       )}
 
@@ -689,6 +755,8 @@ const AdminComplaintsPage = () => {
               onSaved={() => {
                 setIsTicketModalOpen(false);
                 loadTickets();
+                loadComplaints();
+                window.dispatchEvent(new Event("adminComplaintUpdated"));
               }}
               editTicket={ticketToEdit}
             />

@@ -221,7 +221,7 @@ export const CATEGORY_LABELS = {
  * @param {any} raw
  * @returns {any}
  */
-function normalizeComplaint(raw) {
+export function normalizeComplaint(raw) {
   if (!raw) return null;
   const nowIso = new Date().toISOString();
   let status = raw.status || "pending";
@@ -262,11 +262,28 @@ function normalizeComplaint(raw) {
     floor: safeFloor,
     photoUrl: raw.photo_url ?? raw.photoUrl ?? null,
     thumbnail: raw.thumbnail ?? null,
+    photoAfter: raw.photo_after ?? raw.photoAfter ?? null,
     status: status,
     priority: raw.priority ?? "medium",
     votesCount: Number(raw.votesCount || raw.counter || 0),
     createdAt: raw.created_at || raw.createdAt || nowIso,
     user_id: raw.user?.id || raw.user?.user || raw.user || null,
+    creator: raw.user && typeof raw.user === "object" ? {
+      id: raw.user.user ?? raw.user.id,
+      first_name: raw.user.first_name ?? "",
+      last_name: raw.user.last_name ?? "",
+      photo_url: raw.user.photo_url ?? null,
+      contact_info: raw.user.contact_info ?? "",
+    } : null,
+    assignedWorker: raw.assigned_worker && typeof raw.assigned_worker === "object" ? {
+      user: raw.assigned_worker.user ?? raw.assigned_worker.id,
+      first_name: raw.assigned_worker.first_name ?? "",
+      last_name: raw.assigned_worker.last_name ?? "",
+      photo_url: raw.assigned_worker.photo_url ?? null,
+      contact_info: raw.assigned_worker.contact_info ?? "",
+    } : null,
+    deadline: raw.deadline ?? null,
+    commentsCount: Number(raw.comments_count ?? 0),
   };
 }
 
@@ -363,13 +380,21 @@ export async function deleteProblem(id) {
   return true;
 }
 
-export async function updateComplaintStatus(id, newStatus) {
+/**
+ * @param {any} id
+ * @param {string} newStatus
+ * @param {File | null} [photoAfterFile]
+ */
+export async function updateComplaintStatus(id, newStatus, photoAfterFile = null) {
   let backendStatus = newStatus;
   if (newStatus === "approved") backendStatus = "published";
   if (newStatus === "rejected") backendStatus = "denied";
 
   const formData = new FormData();
   formData.append("status", backendStatus);
+  if (photoAfterFile instanceof File) {
+    formData.append("photo_after", photoAfterFile);
+  }
 
   await fetchJson(`/admin/complaints/${id}/status/`, {
     method: "PATCH",
@@ -408,6 +433,7 @@ export async function fetchComments(complaintId) {
       text: c.description,
       author: c.user_name || "Користувач",
       author_id: c.user,
+      author_role: c.user_role || "student",
       date: c.created_at,
     }));
   } catch (e) {
@@ -501,6 +527,7 @@ export async function updateUserProfile(data) {
   if (data.first_name) formData.append("first_name", data.first_name);
   if (data.last_name) formData.append("last_name", data.last_name);
   if (data.email) formData.append("email", data.email);
+  if (data.contact_info !== undefined) formData.append("contact_info", data.contact_info);
   if (data.photoFile instanceof File) formData.append("photo_url", data.photoFile);
 
   return await fetchJson("/profile/", { method: "PATCH", body: formData });
@@ -551,6 +578,31 @@ export async function markAllNotificationsRead() {
 export async function fetchComplaintDetail(id) {
   const raw = await fetchJson(`/complaints/${id}/`);
   return normalizeComplaint(raw);
+}
+
+export async function fetchCampusStatus() {
+  try {
+    return await fetchJson("/campus-status/");
+  } catch (e) {
+    console.warn("Failed to fetch campus status", e);
+    return null;
+  }
+}
+
+export async function updateCampusStatus(data) {
+  return await fetchJson("/campus-status/", {
+    method: "POST",
+    body: data,
+  });
+}
+
+export async function fetchAnnouncementsHistory() {
+  try {
+    return await fetchJson("/announcements-history/");
+  } catch (e) {
+    console.warn("Failed to fetch announcements history", e);
+    return [];
+  }
 }
 
 
