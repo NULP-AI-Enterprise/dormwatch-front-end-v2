@@ -10,6 +10,7 @@ on:
       - "index.html"
       - "Dockerfile"
       - "nginx.conf"
+      - "docker-entrypoint-nginx.sh"
       - "package.json"
       - "vite.config.ts"
 

@@ -14,7 +14,9 @@ RUN npm run build
 
 # Stage 3: runner
 FROM nginx:alpine AS runner
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf.tmpl
+COPY docker-entrypoint-nginx.sh /docker-entrypoint-nginx.sh
 COPY --from=builder /app/dist /usr/share/nginx/html
+RUN chmod +x /docker-entrypoint-nginx.sh
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/docker-entrypoint-nginx.sh"]
