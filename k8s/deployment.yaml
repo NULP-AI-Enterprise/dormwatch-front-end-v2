@@ -20,7 +20,7 @@ spec:
       containers:
         - name: dormwatch-front
           # CI автоматично оновлює цей тег після кожного push
-          image: ghcr.io/nulp-ai-enterprise/dormwatch-front-end-v2:sha-248e04c
+          image: ghcr.io/nulp-ai-enterprise/dormwatch-front-end-v2:sha-4f44104
           imagePullPolicy: Always
           ports:
             - name: http
