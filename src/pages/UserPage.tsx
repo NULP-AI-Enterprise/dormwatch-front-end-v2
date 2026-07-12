@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   fetchMyProblems,
-  deleteProblem,
   CATEGORY_LABELS,
 } from "../services/problemsApi";
 import { resolveImageUrl } from "../services/imageUtils";
@@ -16,7 +15,6 @@ import { useUser } from "../context/UserContext";
 import type { Complaint } from "../lib/types";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Delete01Icon,
   Message01Icon,
   MapPinIcon,
   InboxIcon,
@@ -65,18 +63,15 @@ const UserPage = () => {
     loadMyProblems();
   }, []);
 
-  const onDelete = async (id: number) => {
-    try {
-      await deleteProblem(id);
-      setProblems((prev) => prev.filter((p) => p.id !== id));
-      if (selectedComplaint?.id === id) {
-        setSheetOpen(false);
-        setSelectedComplaint(null);
-      }
-    } catch (err) {
-      console.warn('Failed to delete problem', err);
+  const [successBanner, setSuccessBanner] = useState("");
+
+  useEffect(() => {
+    const successMsg = sessionStorage.getItem("studentReportSuccess");
+    if (successMsg) {
+      setSuccessBanner(successMsg);
+      sessionStorage.removeItem("studentReportSuccess");
     }
-  };
+  }, []);
 
   const activeComplaints = problems.filter((p) => 
     p.status === "pending" || p.status === "approved" || p.status === "active" || p.status === "published"
@@ -101,6 +96,17 @@ const UserPage = () => {
       
     return matchesSearch && matchesStatus && matchesCategory;
   });
+
+  const hasActiveReportFilters =
+    reportSearch !== "" ||
+    reportStatus !== "all" ||
+    reportCategory !== "all";
+
+  const resetReportFilters = () => {
+    setReportSearch("");
+    setReportStatus("all");
+    setReportCategory("all");
+  };
 
   const firstName = currentUser?.first_name || "User";
   const building = currentUser?.place?.building?.name || "";
@@ -171,6 +177,12 @@ const UserPage = () => {
           </TabsList>
 
           <TabsContent value="dashboard">
+            {successBanner && (
+              <div className="mb-6 p-4 border border-green-500/20 bg-green-500/10 text-green-500 text-xs font-semibold rounded-lg shadow-sm flex justify-between items-center animate-fade-in">
+                <span>{successBanner}</span>
+                <button onClick={() => setSuccessBanner("")} className="text-green-500 hover:text-green-400 font-bold ml-2">×</button>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-1 space-y-6">
                 <div>
@@ -199,9 +211,9 @@ const UserPage = () => {
                   <div className="flex items-center gap-3">
                     <span className="text-2xl group-hover:scale-110 transition-transform">🏠</span>
                     <div>
-                      <h3 className="font-bold text-xs text-blue-400">Головна сторінка студента</h3>
+                      <h3 className="font-bold text-xs text-blue-400">На головну студента</h3>
                       <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
-                        Стан систем кампусу, новини та корисні контакти
+                        Стан систем, оголошення та корисна інформація
                       </p>
                     </div>
                   </div>
@@ -209,8 +221,6 @@ const UserPage = () => {
                     ➔
                   </div>
                 </Card>
-
-
 
                 <Button asChild className="w-full">
                   <Link to="/create-report">
@@ -377,6 +387,23 @@ const UserPage = () => {
                 </div>
               </div>
 
+              {/* Results counter */}
+              {hasActiveReportFilters && (
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-xs text-muted-foreground">
+                    Знайдено:{" "}
+                    <span className="font-semibold text-foreground">{filteredReports.length}</span>
+                    {" "}з {problems.length}
+                  </p>
+                  <button
+                    onClick={resetReportFilters}
+                    className="text-[11px] text-blue-500 hover:text-blue-400 transition-colors font-medium"
+                  >
+                    Скинути фільтри
+                  </button>
+                </div>
+              )}
+
               {/* List */}
               <div className="space-y-4">
                 {filteredReports.length === 0 ? (
@@ -470,14 +497,7 @@ const UserPage = () => {
                               </span>
                             )}
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            onClick={() => onDelete(p.id)}
-                            className="text-red-400 border border-red-400/20 hover:bg-red-400/10 transition-colors rounded-lg"
-                          >
-                            <HugeiconsIcon icon={Delete01Icon} className="size-3.5" strokeWidth={2} />
-                          </Button>
+                          {/* Delete button removed */}
                         </div>
                       </div>
                     </Card>

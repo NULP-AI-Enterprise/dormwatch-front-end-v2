@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchUserProfile } from "../services/problemsApi";
 import { Button } from "../components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, SearchIcon, Building03Icon, Camera01Icon, Activity01Icon, ShieldIcon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, Building03Icon, Camera01Icon, Activity01Icon, ShieldIcon } from "@hugeicons/core-free-icons";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Footer from "../components/Footer";
 import { Separator } from "../components/ui/separator";
@@ -14,6 +14,7 @@ const HomePage = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
@@ -23,16 +24,25 @@ const HomePage = () => {
         if (!mounted) return;
         if (profile) {
           setUser(profile);
+          // Redirect admin/worker directly to their panel
+          if (isAdminUser(profile)) {
+            navigate("/admin", { replace: true });
+            return;
+          }
+          if (isWorkerUser(profile)) {
+            navigate("/worker", { replace: true });
+            return;
+          }
         }
       } catch {
-        // not logged in
+        // not logged in — show landing
       } finally {
         if (mounted) setCheckingAuth(false);
       }
     };
     checkAuth();
     return () => { mounted = false; };
-  }, []);
+  }, [navigate]);
 
   const dashboardPath = user
     ? isAdminUser(user)
@@ -42,13 +52,14 @@ const HomePage = () => {
       : "/home"
     : "/auth";
 
-  const reportPath = user
+  const panelPath = user
     ? isAdminUser(user)
-      ? "/admin"
+      ? "/admin/control-panel"
       : isWorkerUser(user)
       ? "/worker"
-      : "/create-report"
+      : "/user"
     : "/auth";
+
 
   if (checkingAuth) {
     return (
@@ -124,39 +135,22 @@ const HomePage = () => {
             <p className="text-lg text-muted-foreground mb-8 max-w-xl leading-relaxed">
               Створюйте заявки на ремонт у вашому гуртожитку менш ніж за 15 секунд. Відстежуйте оновлення статусу в режимі реального часу. Без завантаження додатків та очікування на лінії.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              {user ? (
-                <>
-                  <Button asChild size="lg" className="gap-2">
-                    <Link to={isAdminUser(user) ? "/admin" : isWorkerUser(user) ? "/worker" : "/home"}>
-                      <HugeiconsIcon icon={Building03Icon} className="size-5" strokeWidth={2} />
-                      На головну
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="lg" className="gap-2">
-                    <Link to={isAdminUser(user) ? "/admin" : isWorkerUser(user) ? "/worker" : "/user"}>
-                      {isAdminUser(user) || isWorkerUser(user) ? "Перейти до панелі" : "Перейти до кабінету"}
-                      <HugeiconsIcon icon={ArrowRight01Icon} className="size-5" strokeWidth={2} />
-                    </Link>
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button asChild size="lg" className="gap-2">
-                    <Link to={reportPath}>
-                      Повідомити про проблему
-                      <HugeiconsIcon icon={ArrowRight01Icon} className="size-5" strokeWidth={2} />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="lg" className="gap-2">
-                    <Link to="/auth?tab=login">
-                      <HugeiconsIcon icon={SearchIcon} className="size-5" strokeWidth={2} />
-                      Відстежити заявку
-                    </Link>
-                  </Button>
-                </>
-              )}
-            </div>
+            {user && (
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button asChild size="lg" className="gap-2">
+                  <Link to={dashboardPath}>
+                    <HugeiconsIcon icon={Building03Icon} className="size-5" strokeWidth={2} />
+                    На головну
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="gap-2">
+                  <Link to={panelPath}>
+                    {isAdminUser(user) || isWorkerUser(user) ? "Перейти до панелі" : "Перейти до кабінету"}
+                    <HugeiconsIcon icon={ArrowRight01Icon} className="size-5" strokeWidth={2} />
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="relative w-full aspect-square max-w-lg mx-auto lg:ml-auto">
@@ -165,7 +159,6 @@ const HomePage = () => {
             <div className="absolute inset-0 bg-background border border-border shadow-2xl p-6 flex flex-col gap-4">
               <div className="flex justify-between items-center pb-4">
                 <div className="w-32 h-4 bg-card" />
-                <div className="w-8 h-8 bg-primary/90 border border-blue-800" />
               </div>
               <Separator />
               <div className="bg-card border border-border p-4">

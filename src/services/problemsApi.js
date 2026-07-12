@@ -129,6 +129,21 @@ export async function logoutUser() {
   window.location.reload();
 }
 
+export async function changePassword(oldPassword, newPassword) {
+  const res = await fetch(`${API_BASE}/auth/change-password/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    credentials: "include",
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "Failed to change password");
+  return data;
+}
+
 export async function fetchBuildings() {
   try {
     return await fetchJson("/buildings/");
@@ -385,7 +400,7 @@ export async function deleteProblem(id) {
  * @param {string} newStatus
  * @param {File | null} [photoAfterFile]
  */
-export async function updateComplaintStatus(id, newStatus, photoAfterFile = null) {
+export async function updateComplaintStatus(id, newStatus, photoAfterFile = null, rejectionReason = "") {
   let backendStatus = newStatus;
   if (newStatus === "approved") backendStatus = "published";
   if (newStatus === "rejected") backendStatus = "denied";
@@ -394,6 +409,9 @@ export async function updateComplaintStatus(id, newStatus, photoAfterFile = null
   formData.append("status", backendStatus);
   if (photoAfterFile instanceof File) {
     formData.append("photo_after", photoAfterFile);
+  }
+  if (rejectionReason) {
+    formData.append("rejection_reason", rejectionReason);
   }
 
   await fetchJson(`/admin/complaints/${id}/status/`, {
@@ -596,6 +614,13 @@ export async function updateCampusStatus(data) {
   });
 }
 
+export async function createBuilding(data) {
+  return await fetchJson("/buildings/", {
+    method: "POST",
+    body: data,
+  });
+}
+
 export async function fetchAnnouncementsHistory() {
   try {
     return await fetchJson("/announcements-history/");
@@ -603,6 +628,59 @@ export async function fetchAnnouncementsHistory() {
     console.warn("Failed to fetch announcements history", e);
     return [];
   }
+}
+
+export async function createPlace(data) {
+  return await fetchJson("/places/", {
+    method: "POST",
+    body: data,
+  });
+}
+
+export async function updateBuilding(buildingId, data) {
+  return await fetchJson(`/buildings/${buildingId}/`, {
+    method: "PATCH",
+    body: data,
+  });
+}
+
+export async function createInvite(role) {
+  return await fetchJson("/auth/invites/", {
+    method: "POST",
+    body: { role },
+  });
+}
+
+export async function fetchInviteDetails(token) {
+  return await fetchJson(`/auth/invites/${token}/`);
+}
+
+export async function registerByInvite(token, data) {
+  const res = await fetch(`${API_BASE}/auth/invites/${token}/register/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errBody = await res.json();
+    throw new Error(JSON.stringify(errBody));
+  }
+  const tokenData = await res.json();
+  setAccessToken(tokenData.access);
+  return tokenData;
+}
+
+export async function fetchResidents(buildingId = "") {
+  const query = buildingId ? `?building_id=${buildingId}` : "";
+  return await fetchJson(`/admin/residents/${query}`);
+}
+
+export async function relocateResident(userId, buildingId, roomName) {
+  return await fetchJson(`/admin/residents/relocate/`, {
+    method: "POST",
+    body: { user_id: userId, building_id: buildingId, room_name: roomName }
+  });
 }
 
 

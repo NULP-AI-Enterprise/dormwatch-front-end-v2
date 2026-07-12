@@ -19,30 +19,27 @@ const StudentLayout = ({ children }: { children: ReactNode }) => {
   const initials = getUserInitials(user, "Г");
   const admin = isAdminUser(user);
   const worker = isWorkerUser(user);
+  const student = user && !admin && !worker;
 
   return (
     <div className="min-h-screen flex flex-col">
       <nav className="bg-card border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2 text-primary font-bold text-xl cursor-pointer hover:text-primary/80 transition-colors">
-              <HugeiconsIcon icon={Building03Icon} className="size-6" />
-              <span>DormWatch</span>
-            </Link>
+            {student ? (
+              <Link to="/" className="flex items-center gap-2 text-primary font-bold text-xl hover:text-primary/80 transition-colors">
+                <HugeiconsIcon icon={Building03Icon} className="size-6" />
+                <span>DormWatch</span>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-2 text-primary font-bold text-xl">
+                <HugeiconsIcon icon={Building03Icon} className="size-6" />
+                <span>DormWatch</span>
+              </div>
+            )}
 
             <div className="hidden md:flex items-center">
-              {!worker && (
-                <Link
-                  to="/dashboard"
-                  className={`px-4 py-5 text-sm font-semibold transition-colors border-b-2 ${
-                    currentPath === "/dashboard"
-                      ? "border-blue-500 text-foreground bg-muted/50"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  Дашборд
-                </Link>
-              )}
+
               {admin && (
                 <Link
                   to="/admin"
@@ -55,18 +52,7 @@ const StudentLayout = ({ children }: { children: ReactNode }) => {
                   Адмін-панель
                 </Link>
               )}
-              {worker && (
-                <Link
-                  to="/worker"
-                  className={`px-4 py-5 text-sm font-semibold transition-colors border-b-2 ${
-                    currentPath === "/worker"
-                      ? "border-blue-500 text-foreground bg-muted/50"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  Панель майстра
-                </Link>
-              )}
+
             </div>
           </div>
 

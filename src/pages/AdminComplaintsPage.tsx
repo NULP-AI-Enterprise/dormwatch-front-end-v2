@@ -14,11 +14,11 @@ import {
 import { resolveImageUrl } from "../services/imageUtils";
 import ComplaintSidePanel from "../components/ComplaintSidePanel";
 import TicketCreateForm from "../components/TicketCreateForm";
-import { NotificationBell } from "../components/NotificationBell";
 import { useUser } from "../context/UserContext";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
 import { Card, CardContent } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import {
@@ -54,7 +54,6 @@ import {
   CancelCircleIcon,
   AddIcon,
   MoreHorizontalIcon,
-  Download01Icon,
   Ticket01Icon,
 } from "@hugeicons/core-free-icons";
 import type { Complaint, Ticket, Employee } from "../lib/types";
@@ -125,6 +124,7 @@ const AdminComplaintsPage = () => {
   const [selectedStatus, setSelectedStatus] = useState(location.state?.selectedStatus || "all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPriority, setSelectedPriority] = useState("all");
+  const [rejectionReason, setRejectionReason] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -171,15 +171,52 @@ const AdminComplaintsPage = () => {
   useEffect(() => {
     loadComplaints();
     loadTickets();
-    
+  }, []);
+
+  useEffect(() => {
     const handleUpdate = () => {
       loadComplaints();
       loadTickets();
     };
+
+    const handleOpenComplaint = (e: any) => {
+      setSelectedComplaint(e.detail);
+      setSheetOpen(true);
+    };
+
+    const handleExport = () => setIsExportModalOpen(true);
+
+    const handleAssign = () => {
+      const target = selectedComplaint || complaints[0];
+      if (target) {
+        openTicketModal(target);
+      }
+    };
     
     window.addEventListener("adminComplaintUpdated", handleUpdate);
-    return () => window.removeEventListener("adminComplaintUpdated", handleUpdate);
-  }, []);
+    window.addEventListener("openComplaint", handleOpenComplaint);
+    window.addEventListener("triggerExport", handleExport);
+    window.addEventListener("triggerAssignWorker", handleAssign);
+
+    return () => {
+      window.removeEventListener("adminComplaintUpdated", handleUpdate);
+      window.removeEventListener("openComplaint", handleOpenComplaint);
+      window.removeEventListener("triggerExport", handleExport);
+      window.removeEventListener("triggerAssignWorker", handleAssign);
+    };
+  }, [complaints, selectedComplaint]);
+
+  useEffect(() => {
+    const pendingId = sessionStorage.getItem("pendingOpenComplaintId");
+    if (pendingId && complaints.length > 0) {
+      const found = complaints.find(c => String(c.id) === pendingId);
+      if (found) {
+        setSelectedComplaint(found);
+        setSheetOpen(true);
+        sessionStorage.removeItem("pendingOpenComplaintId");
+      }
+    }
+  }, [complaints]);
 
   const [tab, setTab] = useState<"requests" | "tickets">("requests");
 
@@ -191,9 +228,9 @@ const AdminComplaintsPage = () => {
     }
   }, [tab]);
 
-  const handleChangeStatus = async (id: number, newStatus: string) => {
+  const handleChangeStatus = async (id: number, newStatus: string, reason?: string) => {
     try {
-      await updateComplaintStatus(id, newStatus);
+      await updateComplaintStatus(id, newStatus, null, reason);
       loadComplaints();
       loadTickets();
     } catch (err) {
@@ -216,6 +253,21 @@ const AdminComplaintsPage = () => {
     setIsTicketModalOpen(true);
   };
 
+  const hasActiveFilters =
+    selectedStatus !== "all" ||
+    selectedCategory !== "all" ||
+    selectedPriority !== "all" ||
+    selectedDate !== undefined ||
+    searchQuery !== "";
+
+  const resetFilters = () => {
+    setSelectedStatus("all");
+    setSelectedCategory("all");
+    setSelectedPriority("all");
+    setSelectedDate(undefined);
+    setSearchQuery("");
+  };
+
   const filteredComplaints = useMemo(
     () =>
       complaints.filter((p) => {
@@ -224,15 +276,32 @@ const AdminComplaintsPage = () => {
           selectedCategory === "all" || p.category === selectedCategory;
         const priorityOk =
           selectedPriority === "all" || p.priority === selectedPriority;
+        const q = searchQuery.toLowerCase();
         const searchOk =
-          searchQuery === "" ||
-          (p.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (p.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+          q === "" ||
+          (p.title || "").toLowerCase().includes(q) ||
+          (p.description || "").toLowerCase().includes(q) ||
+          `${p.creator?.first_name ?? ""} ${p.creator?.last_name ?? ""}`
+            .toLowerCase()
+            .includes(q);
         const dateOk = !selectedDate || new Date(p.createdAt).toLocaleDateString('en-CA') === format(selectedDate, 'yyyy-MM-dd');
         return statusOk && categoryOk && priorityOk && searchOk && dateOk;
       }),
     [complaints, selectedStatus, selectedCategory, selectedPriority, searchQuery, selectedDate]
   );
+
+  const hasActiveTicketFilters =
+    ticketStatus !== "all" ||
+    ticketCategory !== "all" ||
+    ticketPriority !== "all" ||
+    ticketSearchQuery !== "";
+
+  const resetTicketFilters = () => {
+    setTicketStatus("all");
+    setTicketCategory("all");
+    setTicketPriority("all");
+    setTicketSearchQuery("");
+  };
 
   const filteredTickets = useMemo(
     () =>
@@ -274,8 +343,8 @@ const AdminComplaintsPage = () => {
 
       <div className="flex-1 flex flex-col min-h-screen">
       <Tabs value={tab} onValueChange={(v) => setTab(v as "requests" | "tickets")} className="flex-1 flex flex-col">
-          <div className="flex items-center justify-between pr-6">
-            <TabsList className="bg-muted/50 p-1 rounded-xl border border-border h-auto inline-flex gap-1 ml-6 mt-4">
+          <div className="px-5 pt-5 flex justify-start">
+            <TabsList className="bg-muted/50 p-1 rounded-xl border border-border h-auto inline-flex gap-1">
               <TabsTrigger value="requests" className="px-6 py-2 text-xs font-semibold rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200">
                 Скарги
               </TabsTrigger>
@@ -283,38 +352,36 @@ const AdminComplaintsPage = () => {
                 Тікети
               </TabsTrigger>
             </TabsList>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 h-9"
-                onClick={() => setIsExportModalOpen(true)}
-              >
-                <HugeiconsIcon icon={Download01Icon} className="size-4" strokeWidth={2} />
-                Експорт даних
-              </Button>
-              <NotificationBell onSelectComplaint={(c) => {
-                setSelectedComplaint(c);
-                setSheetOpen(true);
-              }} />
-            </div>
           </div>
-          <Separator />
 
           <TabsContent value="requests" className="flex-1 p-5">
             <div className="grid lg:grid-cols-4 gap-8">
               <div className="lg:col-span-1 space-y-4">
                 <Card className="border-border shadow-none bg-card">
                   <CardContent className="p-4">
+                    {/* Unified search */}
                     <div className="relative mb-4">
                       <HugeiconsIcon icon={SearchIcon} className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" strokeWidth={2} />
                       <Input
-                        placeholder="Пошук скарг..."
+                        placeholder="Пошук за назвою, описом, ім’ям..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8"
+                        className="pl-8 text-xs"
                       />
                     </div>
+
+                    {/* Reset all filters button */}
+                    {hasActiveFilters && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={resetFilters}
+                        className="w-full mb-4 h-8 text-xs text-muted-foreground hover:text-foreground gap-1.5 border border-dashed border-border hover:border-solid"
+                      >
+                        <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+                        Скинути всі фільтри
+                      </Button>
+                    )}
 
                     <h4 className="text-xs font-semibold text-muted-foreground mb-3">
                       Статус
@@ -386,6 +453,28 @@ const AdminComplaintsPage = () => {
                 {!loading && err && (
                   <div className="border border-red-500/30 bg-red-500/10 text-red-400 p-4 text-xs font-bold">
                     {err}
+                  </div>
+                )}
+
+                {/* Results counter */}
+                {!loading && !err && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      Знайдено:{" "}
+                      <span className="font-semibold text-foreground">{filteredComplaints.length}</span>
+                      {" "}{filteredComplaints.length === 1 ? "скарга" : filteredComplaints.length >= 2 && filteredComplaints.length <= 4 ? "скарги" : "скарг"}
+                      {complaints.length !== filteredComplaints.length && (
+                        <span className="text-muted-foreground"> з {complaints.length}</span>
+                      )}
+                    </p>
+                    {hasActiveFilters && (
+                      <button
+                        onClick={resetFilters}
+                        className="text-[11px] text-blue-500 hover:text-blue-400 transition-colors font-medium"
+                      >
+                        Скинути фільтри
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -514,12 +603,30 @@ const AdminComplaintsPage = () => {
                                         <AlertDialogHeader>
                                           <AlertDialogTitle>Відхилити скаргу?</AlertDialogTitle>
                                           <AlertDialogDescription>
-                                            Ви впевнені, що хочете відхилити цю скаргу? Вона перейде в статус "Відхилено".
+                                            Будь ласка, вкажіть причину відхилення скарги. Студент отримає сповіщення про це.
                                           </AlertDialogDescription>
                                         </AlertDialogHeader>
+                                        <div className="py-2">
+                                          <Textarea
+                                            placeholder="Введіть причину відхилення..."
+                                            value={rejectionReason}
+                                            onChange={(e) => setRejectionReason(e.target.value)}
+                                            rows={3}
+                                            className="text-xs bg-card"
+                                          />
+                                        </div>
                                         <AlertDialogFooter>
-                                          <AlertDialogCancel>Скасувати</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => handleChangeStatus(p.id, "rejected")} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Відхилити</AlertDialogAction>
+                                          <AlertDialogCancel onClick={() => setRejectionReason("")}>Скасувати</AlertDialogCancel>
+                                          <AlertDialogAction 
+                                            onClick={() => {
+                                              handleChangeStatus(p.id, "rejected", rejectionReason);
+                                              setRejectionReason("");
+                                            }} 
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            disabled={!rejectionReason.trim()}
+                                          >
+                                            Відхилити
+                                          </AlertDialogAction>
                                         </AlertDialogFooter>
                                       </AlertDialogContent>
                                     </AlertDialog>
@@ -595,9 +702,21 @@ const AdminComplaintsPage = () => {
                         placeholder="Пошук тікетів..."
                         value={ticketSearchQuery}
                         onChange={(e) => setTicketSearchQuery(e.target.value)}
-                        className="pl-8"
+                        className="pl-8 text-xs"
                       />
                     </div>
+
+                    {hasActiveTicketFilters && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={resetTicketFilters}
+                        className="w-full mb-4 h-8 text-xs text-muted-foreground hover:text-foreground gap-1.5 border border-dashed border-border hover:border-solid"
+                      >
+                        <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+                        Скинути всі фільтри
+                      </Button>
+                    )}
 
                     <h4 className="text-xs font-semibold text-muted-foreground mb-3">
                       Статус тікету
@@ -633,10 +752,25 @@ const AdminComplaintsPage = () => {
                 </Card>
               </div>
 
-              <div className="lg:col-span-3 space-y-6">
-                <h3 className="text-sm font-bold text-foreground">
-                  Тікети для підтверджених заявок
-                </h3>
+              <div className="lg:col-span-3 space-y-4">
+                {/* Results counter for tickets */}
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    Тікетів:{" "}
+                    <span className="font-semibold text-foreground">{filteredTickets.length}</span>
+                    {approvedForTickets.length !== filteredTickets.length && (
+                      <span className="text-muted-foreground"> з {approvedForTickets.length}</span>
+                    )}
+                  </p>
+                  {hasActiveTicketFilters && (
+                    <button
+                      onClick={resetTicketFilters}
+                      className="text-[11px] text-blue-500 hover:text-blue-400 transition-colors font-medium"
+                    >
+                      Скинути фільтри
+                    </button>
+                  )}
+                </div>
                 {filteredTickets.length === 0 ? (
                   <div className="border border-dashed border-border p-8 flex flex-col items-center justify-center text-center">
                     <div className="w-12 h-12 mb-4 border border-border bg-card flex items-center justify-center text-muted-foreground">

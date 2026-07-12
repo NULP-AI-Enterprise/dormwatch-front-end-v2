@@ -4,6 +4,7 @@ import CommentSection from "./CommentSection";
 import TicketCreateForm from "./TicketCreateForm";
 import ProgressStepper from "./ProgressStepper";
 import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import {
@@ -67,6 +68,7 @@ const ComplaintSidePanel = ({
   const [photoAfterFile, setPhotoAfterFile] = useState<File | null>(null);
   const [photoAfterPreview, setPhotoAfterPreview] = useState<string | null>(null);
   const [resolving, setResolving] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
     if (complaint?.priority) {
@@ -76,9 +78,9 @@ const ComplaintSidePanel = ({
 
   if (!complaint) return null;
 
-  const handleStatusChange = async (newStatus: string, photoFile: File | null = null) => {
+  const handleStatusChange = async (newStatus: string, photoFile: File | null = null, reason: string = "") => {
     try {
-      await updateComplaintStatus(complaint.id, newStatus, photoFile as any);
+      await updateComplaintStatus(complaint.id, newStatus, photoFile as any, reason);
       onStatusChange();
       onOpenChange(false);
     } catch (err) {
@@ -366,12 +368,30 @@ const ComplaintSidePanel = ({
                         <AlertDialogHeader>
                           <AlertDialogTitle>Відхилити скаргу?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Ви впевнені, що хочете відхилити цю скаргу? Вона перейде в статус "Відхилено".
+                            Будь ласка, вкажіть причину відхилення скарги. Студент отримає сповіщення про це.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
+                        <div className="py-2">
+                          <Textarea
+                            placeholder="Введіть причину відхилення..."
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                            rows={3}
+                            className="text-xs bg-card"
+                          />
+                        </div>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Скасувати</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleStatusChange("rejected")} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Відхилити</AlertDialogAction>
+                          <AlertDialogCancel onClick={() => setRejectionReason("")}>Скасувати</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => {
+                              handleStatusChange("rejected", null, rejectionReason);
+                              setRejectionReason("");
+                            }} 
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={!rejectionReason.trim()}
+                          >
+                            Відхилити
+                          </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>

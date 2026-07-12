@@ -9,6 +9,7 @@ import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { isAdminUser, isWorkerUser } from "../lib/complaintUtils";
+import { useUser } from "../context/UserContext";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Building03Icon,
@@ -27,10 +28,7 @@ import {
 } from "../components/ui/form";
 
 const loginSchema = z.object({
-  email: z.string().min(1, "Email обов'язковий").email("Невірний формат email").refine(
-    (v) => v.endsWith("@lpnu.ua"),
-    "Дозволені тільки домени @lpnu.ua"
-  ),
+  email: z.string().min(1, "Email обов'язковий").email("Невірний формат email"),
   password: z.string().min(1, "Пароль обов'язковий"),
 });
 
@@ -108,8 +106,46 @@ function ErrorBanner({ message }: { message: string }) {
   );
 }
 
+function translateError(msg: string, email?: string): string {
+  const m = msg.trim().toLowerCase();
+  
+  if (m.includes("invalid credentials") || m.includes("credential")) {
+    if (email && !email.toLowerCase().endsWith("@lpnu.ua")) {
+      return "Невірний email або пароль. Зверніть увагу: студенти можуть увійти тільки з доменом @lpnu.ua";
+    }
+    return "Невірний email або пароль. Спробуйте ще раз.";
+  }
+  
+  if (m.includes("not authorized for student accounts") || m.includes("domain not authorized")) {
+    return "Увійти можна тільки з доменом @lpnu.ua";
+  }
+  
+  if (m.includes("already exists") || m.includes("exists")) {
+    return "Користувач з такою електронною поштою вже існує.";
+  }
+  
+  if (m.includes("required")) {
+    return "Будь ласка, заповніть усі обов'язкові поля.";
+  }
+  
+  if (m.includes("password is too short")) {
+    return "Пароль має бути щонайменше 8 символів.";
+  }
+  
+  if (m.includes("digits only")) {
+    return "Пароль не може складатися лише з цифр.";
+  }
+
+  if (m.includes("letters only")) {
+    return "Пароль не може складатися лише з літер.";
+  }
+  
+  return msg;
+}
+
 const AuthPage = () => {
   const navigate = useNavigate();
+  const { refreshUser } = useUser();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("tab") === "register" ? "register" : "login";
 
@@ -176,11 +212,11 @@ const AuthPage = () => {
     setLoading(true);
     try {
       await loginUser(data.email, data.password);
-      window.dispatchEvent(new Event("profileUpdated"));
-      const profile = await fetchUserProfile();
+      const profile = await refreshUser();
       routeUser(profile);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Невірний email або пароль");
+      const rawMsg = err instanceof Error ? err.message : "Невірний email або пароль";
+      setError(translateError(rawMsg, data.email));
     } finally {
       setLoading(false);
     }
@@ -199,8 +235,7 @@ const AuthPage = () => {
         // TODO: include place_id once buildings/places are populated
         ...(data.place_id ? { place_id: data.place_id } : {}),
       });
-      window.dispatchEvent(new Event("profileUpdated"));
-      const profile = await fetchUserProfile();
+      const profile = await refreshUser();
       routeUser(profile);
     } catch (err) {
       let msg = "Помилка реєстрації";
@@ -216,7 +251,7 @@ const AuthPage = () => {
           msg = err.message || msg;
         }
       }
-      setError(msg);
+      setError(translateError(msg, data.email));
     } finally {
       setLoading(false);
     }

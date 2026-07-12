@@ -230,7 +230,7 @@ const DashboardPage = () => {
                   key={problem.id}
                   className="border-border shadow-none group relative"
                 >
-                  {canManage(problem) && (
+                  {admin && (
                     <Button
                       variant="ghost"
                       size="icon-xs"
