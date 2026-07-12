@@ -12,12 +12,16 @@ import AdminLayout from "./components/AdminLayout";
 import AdminTicketsPrintPage from "./pages/AdminTicketsPrintPage";
 import WorkerPage from "./pages/WorkerPage";
 import StudentHomePage from "./pages/StudentHomePage";
+import AdminControlPanelPage from "./pages/AdminControlPanelPage";
+import RegisterByInvitePage from "./pages/RegisterByInvitePage";
+import AdminResidentsPage from "./pages/AdminResidentsPage";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/auth" element={<AuthPage />} />
+      <Route path="/register-by-invite" element={<RegisterByInvitePage />} />
       <Route
         path="/home"
         element={
@@ -69,11 +73,31 @@ function App() {
         }
       />
       <Route
+        path="/admin/residents"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AdminLayout>
+              <AdminResidentsPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/complaints"
         element={
           <ProtectedRoute requireAdmin>
             <AdminLayout>
               <AdminComplaintsPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/control-panel"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AdminLayout>
+              <AdminControlPanelPage />
             </AdminLayout>
           </ProtectedRoute>
         }

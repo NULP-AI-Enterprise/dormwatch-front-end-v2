@@ -198,6 +198,21 @@ const WorkerPage = () => {
     return { total, active, resolved };
   }, [parsedTickets]);
 
+  const hasActiveFilters =
+    searchQuery !== "" ||
+    selectedPriority !== "all" ||
+    selectedDate !== undefined ||
+    deadlineSort !== "newest_assigned" ||
+    activeStatus !== "all";
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedPriority("all");
+    setSelectedDate(undefined);
+    setDeadlineSort("newest_assigned");
+    setActiveStatus("all");
+  };
+
   const firstName = currentUser?.first_name || "Робітник";
 
   if (loading) {
@@ -264,6 +279,18 @@ const WorkerPage = () => {
                 />
               </div>
 
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="w-full mb-4 h-8 text-xs text-muted-foreground hover:text-foreground gap-1.5 border border-dashed border-border hover:border-solid"
+                >
+                  <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+                  Скинути всі фільтри
+                </Button>
+              )}
+
               <h4 className="text-xs font-semibold text-muted-foreground mb-3">
                 Пріоритет
               </h4>
@@ -327,7 +354,7 @@ const WorkerPage = () => {
                   Всі ({stats.total})
                 </TabsTrigger>
                 <TabsTrigger value="active" className="text-xs font-semibold px-4">
-                  Активні ({stats.active})
+                  Призначені ({stats.active})
                 </TabsTrigger>
                 <TabsTrigger value="resolved" className="text-xs font-semibold px-4">
                   Вирішені ({stats.resolved})
@@ -337,6 +364,26 @@ const WorkerPage = () => {
           </div>
 
           <div className="space-y-4">
+            {/* Results counter */}
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Знайдено:{" "}
+                <span className="font-semibold text-foreground">{filteredTickets.length}</span>
+                {" "}{filteredTickets.length === 1 ? "заявка" : filteredTickets.length >= 2 && filteredTickets.length <= 4 ? "заявки" : "заявок"}
+                {parsedTickets.length !== filteredTickets.length && (
+                  <span className="text-muted-foreground"> з {parsedTickets.length}</span>
+                )}
+              </p>
+              {hasActiveFilters && (
+                <button
+                  onClick={resetFilters}
+                  className="text-[11px] text-blue-500 hover:text-blue-400 transition-colors font-medium"
+                >
+                  Скинути фільтри
+                </button>
+              )}
+            </div>
+
             {filteredTickets.length === 0 ? (
               <div className="border border-dashed border-border p-12 flex flex-col items-center justify-center text-center">
                 <div className="w-12 h-12 mb-4 border border-border bg-card flex items-center justify-center text-muted-foreground">

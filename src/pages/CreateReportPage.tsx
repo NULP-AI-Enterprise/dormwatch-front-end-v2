@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { createProblem, fetchUserProfile } from "../services/problemsApi";
+import { createProblem, fetchUserProfile, fetchPlaces } from "../services/problemsApi";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon, Camera01Icon, DropletsIcon, BoltIcon, ArmchairIcon, WifiIcon, Cancel01Icon, Forward01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
+import { Dialog, DialogContent, DialogTitle, DialogClose } from "../components/ui/dialog";
 
 const categories = [
   {
@@ -57,14 +58,57 @@ const CreateReportPage = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const [userBuildingId, setUserBuildingId] = useState<number | null>(null);
+  const [rooms, setRooms] = useState<Array<{place_id: number, place_name: string}>>([]);
+  const [roomsLoading, setRoomsLoading] = useState(false);
+  const [isCustomPlace, setIsCustomPlace] = useState(false);
+  const [customPlaceName, setCustomPlaceName] = useState("");
 
   useEffect(() => {
     fetchUserProfile().then((user) => {
+      if (user?.place?.building?.building_id) {
+        setUserBuildingId(user.place.building.building_id);
+      }
       if (user?.place?.place_name) {
         setFormData((prev) => ({ ...prev, placeName: user.place.place_name }));
+        setCustomPlaceName(user.place.place_name);
       }
     }).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!userBuildingId) return;
+    setRoomsLoading(true);
+    fetchPlaces(userBuildingId)
+      .then((data) => {
+        const roomsList = data || [];
+        setRooms(roomsList);
+        // If the user has an assigned room that is not in the rooms list, activate custom text entry mode
+        if (formData.placeName && !roomsList.some((r: any) => r.place_name === formData.placeName)) {
+          setIsCustomPlace(true);
+        }
+      })
+      .catch(() => {
+        setRooms([]);
+        setIsCustomPlace(true);
+      })
+      .finally(() => {
+        setRoomsLoading(false);
+      });
+  }, [userBuildingId]);
+
+  const handlePlaceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === "custom") {
+      setIsCustomPlace(true);
+      setFormData((prev) => ({ ...prev, placeName: "" }));
+    } else {
+      setIsCustomPlace(false);
+      setFormData((prev) => ({ ...prev, placeName: val }));
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -106,9 +150,10 @@ const CreateReportPage = () => {
         title: formData.title.trim(),
         description: formData.description.trim(),
         priority: formData.priority,
-        place_name: formData.placeName?.trim() || undefined,
+        place_name: (isCustomPlace ? customPlaceName.trim() : formData.placeName.trim()) || undefined,
         photoFile: photoFile,
       });
+      sessionStorage.setItem("studentReportSuccess", "Заявку успішно створено! 🛠️ Наш комендант та майстри вже працюють над нею.");
       navigate("/user");
     } catch (err: any) {
       setError(`Не вдалось створити заявку: ${err.message}`);
@@ -231,15 +276,59 @@ const CreateReportPage = () => {
               <label className="text-xs font-bold text-foreground uppercase tracking-wider block mb-2">
                 📍 Де саме проблема?
               </label>
-              <Input
-                type="text"
-                name="placeName"
-                value={formData.placeName}
-                onChange={handleInputChange}
-                placeholder="Наприклад: Кімната 305, душова на 2 поверсі..."
-                maxLength={100}
-                className="h-10 rounded-lg"
-              />
+              {!isCustomPlace ? (
+                <select
+                  name="placeName"
+                  value={formData.placeName}
+                  onChange={handlePlaceChange}
+                  className="flex h-10 w-full rounded-lg border border-input bg-card px-3 py-2 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  disabled={roomsLoading}
+                >
+                  {roomsLoading ? (
+                    <option value="">Завантаження кімнат...</option>
+                  ) : (
+                    <>
+                      <option value="">Оберіть кімнату...</option>
+                      {rooms.map((room) => (
+                        <option key={room.place_id} value={room.place_name}>
+                          {room.place_name}
+                        </option>
+                      ))}
+                      <option value="custom">Інше (ввести вручну)</option>
+                    </>
+                  )}
+                </select>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Наприклад: 105, 312а або Кухня 1 поверху..."
+                      value={customPlaceName}
+                      onChange={(e) => setCustomPlaceName(e.target.value)}
+                      className="h-10 rounded-lg flex-1 text-xs"
+                      required
+                    />
+                    {rooms.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsCustomPlace(false);
+                          setCustomPlaceName("");
+                          setFormData((prev) => ({ ...prev, placeName: rooms[0]?.place_name || "" }));
+                        }}
+                        className="h-10 text-xs px-3 shrink-0"
+                      >
+                        Назад до списку
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Введіть номер кімнати або назву локації вручну.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>
@@ -267,7 +356,8 @@ const CreateReportPage = () => {
                 <img
                   src={previewUrl}
                   alt="Preview"
-                  className="w-full h-full object-cover"
+                  onClick={() => setIsPreviewOpen(true)}
+                  className="w-full h-full object-cover cursor-zoom-in"
                 />
                 <Button
                   type="button"
@@ -313,6 +403,22 @@ const CreateReportPage = () => {
           {submitting ? "Надсилаю заявку..." : "Опублікувати звернення"}
         </Button>
       </form>
+
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-[90vw] sm:max-w-[90vw] bg-transparent border-none shadow-none p-0 flex justify-center items-center" showCloseButton={false}>
+          <DialogTitle className="sr-only">Image preview</DialogTitle>
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              className="w-full h-auto max-h-[90vh] object-contain rounded-xl"
+              alt="Full size preview"
+            />
+          )}
+          <DialogClose className="absolute top-4 right-4 text-foreground hover:text-stone-300">
+            <HugeiconsIcon icon={Cancel01Icon} className="size-6" strokeWidth={2} />
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

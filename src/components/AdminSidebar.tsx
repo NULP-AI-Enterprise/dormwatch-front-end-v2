@@ -1,7 +1,7 @@
-import { NavLink, Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { DashboardSquare01Icon, ClipboardIcon, GroupIcon, Megaphone01Icon, SettingsIcon, Logout01Icon, Building03Icon } from "@hugeicons/core-free-icons";
+import { DashboardSquare01Icon, ClipboardIcon, GroupIcon, SettingsIcon, Logout01Icon, Building03Icon } from "@hugeicons/core-free-icons";
 import { logoutUser } from "../services/problemsApi";
 import { SettingsModal } from "./SettingsModal";
 import { useState } from "react";
@@ -16,7 +16,7 @@ const navItems = [
   { to: "/admin", icon: DashboardSquare01Icon, label: "Огляд" },
   { to: "#", icon: GroupIcon, label: "Мешканці" },
   { to: "/admin/complaints", icon: ClipboardIcon, label: "Всі заявки" },
-  { to: "#", icon: Megaphone01Icon, label: "Оголошення" },
+  { to: "/admin/control-panel", icon: SettingsIcon, label: "Панель керування" },
 ];
 
 const AdminSidebar = ({ userName = "Адмін", userRole = "Адміністратор", initials = "AD" }: AdminSidebarProps) => {
@@ -26,10 +26,10 @@ const AdminSidebar = ({ userName = "Адмін", userRole = "Адміністр�
     <>
       <aside className="hidden md:flex md:flex-col md:w-56 lg:w-64 bg-background border-r border-border min-h-screen shrink-0">
         <div className="h-20 px-6 flex items-center border-b border-border">
-          <Link to="/admin" className="flex items-center gap-2 text-primary font-bold text-xl">
+          <div className="flex items-center gap-2 text-primary font-bold text-xl">
             <HugeiconsIcon icon={Building03Icon} className="size-6" strokeWidth={1.5} />
             <span>DormWatch</span>
-          </Link>
+          </div>
         </div>
 
         <nav className="flex-1 py-6 px-4 space-y-2">
@@ -41,7 +41,7 @@ const AdminSidebar = ({ userName = "Адмін", userRole = "Адміністр�
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-colors border-l-4",
-                  item.to === "#" && "pointer-events-none",
+                  item.to === "#" && "pointer-events-none opacity-40 text-muted-foreground/40 cursor-not-allowed",
                   isActive && item.to !== "#"
                     ? "border-blue-500 bg-primary/5 text-foreground"
                     : "border-transparent text-muted-foreground hover:border-border/80 hover:text-foreground"

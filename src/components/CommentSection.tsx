@@ -88,13 +88,13 @@ const CommentSection = ({ complaintId, currentUserId, isAdmin, isWorker, complai
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-foreground">{c.author}</span>
                   {c.author_role && ["admin", "адміністратор"].includes(c.author_role) ? (
-                    <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 bg-blue-500 text-white hover:bg-blue-600">Адміністратор</Badge>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-yellow-500 bg-yellow-500/10 border-yellow-700/50">Адміністратор</Badge>
                   ) : c.author_role && ["worker", "робітник", "майстер"].includes(c.author_role) ? (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-[#d7ccc8] bg-[#4e342e] border-[#5d4037]">Працівник</Badge>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-[#b47953] bg-[#b47953]/10 border-[#b47953]/50">Працівник</Badge>
                   ) : c.author_id === complaintAuthorId ? (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-green-600 border-green-600">Автор скарги</Badge>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-blue-500 bg-blue-500/10 border-blue-700/50">Автор скарги</Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-stone-500 border-stone-300">Студент</Badge>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-blue-500 bg-blue-500/10 border-blue-700/50">Студент</Badge>
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground">

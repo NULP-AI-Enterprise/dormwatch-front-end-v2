@@ -4,13 +4,13 @@ import { fetchUserProfile } from "../services/problemsApi";
 interface UserContextValue {
   user: any;
   loading: boolean;
-  refreshUser: () => void;
+  refreshUser: () => Promise<any>;
 }
 
 const UserContext = createContext<UserContextValue>({
   user: null,
   loading: true,
-  refreshUser: () => {},
+  refreshUser: () => Promise.resolve(null),
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
@@ -19,9 +19,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshUser = () => {
     setLoading(true);
-    fetchUserProfile()
-      .then((data) => setUser(data))
-      .catch(() => setUser(null))
+    return fetchUserProfile()
+      .then((data) => {
+        setUser(data);
+        return data;
+      })
+      .catch(() => {
+        setUser(null);
+        return null;
+      })
       .finally(() => setLoading(false));
   };
 
